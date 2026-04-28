@@ -868,4 +868,48 @@ if ok_all and ok_any: match
 ```
 유일한 매칭 키: shmaOrdNo (쇼핑몰주문번호)
 - 풀필먼트 송장의 쇼핑몰주문번호 ↔ 사방넷 ord 의 shmaOrdNo
-- 두 키가 동일하면 매칭 (1:N 합배송 자동 처리, 분할 출고�
+- 두 키가 동일하면 매칭 (1:N 합배송 자동 처리, 분할 출고는 1:1 짝짓기)
+- 받는분 이름은 라벨로만 표시 (사용자 가독용), 매칭 로직에 절대 들어가지 않음
+```
+
+매칭 결과 분류:
+- **matched**: shmaOrdNo 일치 → 풀필 송장 ↔ 사방넷 ord 정확 연결
+- **unmatched_ff**: 풀필 송장 있는데 사방넷에 shmaOrdNo 없음 → 사방넷 미수집 의심 (수동 주문수집 트리거)
+- **unmatched_sabang**: 사방넷에는 있는데 풀필 송장 없음 → 빈박스 또는 미출고 (정상)
+
+이 원칙으로 동성동명·오타·이름 변형 모든 매칭 사고 원천 차단.
+
+### 3. 송장처리 직전 일괄확정·주문상태변경 사전 단계 (124건 누락 사고 방지)
+
+**사고**: 1차 일괄확정 이후 사방넷 자동수집된 후행 신규주문 124건이 ordStsCd=001로 남음. 풀필먼트는 사방넷-풀필먼트 자동연동으로 송장 발행했지만 사방넷은 운송장 등록 거부 ("송장을 등록할 주문상태가 아닙니다").
+
+**해결**: 송장처리 시작 직전에 반드시 다음 사전 단계 실행:
+1. 주문서확정관리 → 7일 범위 → 주문미확정 필터 → 일괄주문확정 (모든 후행 신규주문 확정)
+2. 주문서확인처리 → 신규주문(001) 필터 → 주문상태변경(001→002) 일괄 실행
+3. 그 다음에 풀필먼트 송장 다운로드 → 사방넷 운송장 등록 → 쇼핑몰 송신
+
+### 4. 주문상태변경 popup 우회 (window.opener 트릭)
+
+사방넷 주문상태변경은 `window.open()` 새 창이라 Chrome 팝업 차단·MCP 환경에서 작동 불가.
+
+**해결**:
+```js
+// 부모(주문서확인처리) 페이지에서:
+const sel = elTable.store.states.selection;  // 선택된 ord 124건
+window.sbParamMap = window.sbParamMap || {};
+window.sbParamMap['order-confirm-order-status-change-popup'] = {
+  bindObject: { dataList: sel, ordNoArr: sel.map(r => r.ordNo) },
+  resultFn: function(d){}
+};
+Object.defineProperty(window, 'opener', { get: () => window, configurable: true });
+window.name = 'order-confirm-order-status-change-popup';
+```
+같은 탭에서 `/#/popup/views/pages/order/order-confirm/order-confirm-order-status-change-popup.vue?menuNo=661` 로 navigate.
+popup 컴포넌트 마운트 후 `multiselectList`, `compareChangeOrder='1'`, `sbForm.orderStatus='002'` 직접 set →
+`changeOrderStatus()` + `exeOrderConfirmOrderStatusChange()` 직접 호출.
+
+API 엔드포인트: `POST /prod-api/customer/order/OrderConfirm/exeOrderConfirmOrderStatusChange`
+
+### 5. 쇼핑몰운송장송신 fake window.open 트릭
+
+쇼핑몰운송장송신 페이지 (`#/mall/mall-waybill-transmit`)는 사방넷 데스크톱 클라이언트(`http://127.0.0.1:8181`)를 호출하기 위해 popup 검사 수행. Chrome 팝업 �

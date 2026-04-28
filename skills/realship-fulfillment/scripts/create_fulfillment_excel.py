@@ -196,6 +196,45 @@ def get_set_multiplier(option, mapping):
     return 1
 
 
+def check_duplicate_with_history(rows, history_paths=None):
+    """
+    중복 발주 가드 (2026-04-28 v0.2.1 추가).
+    이미 풀필먼트에 등록된 쇼핑몰주문번호가 이번 발주에 또 들어가는지 검사.
+    history_paths: 풀필먼트 발주조회 raw JSON 또는 엑셀 변환본 경로들.
+    각 history는 [{'쇼핑몰주문번호': ..., '발주등록일': ..., '오더코드': ...}] 형식 기대.
+
+    검사 룰:
+      - 같은 shmaOrdNo (주문번호) 가 history 에 이미 있으면 ⚠️ 차단
+      - 단, 사용자 명시 강제(force) 가 아니면 업로드 거부
+    """
+    if not history_paths:
+        return []
+    history = set()
+    for p in history_paths:
+        try:
+            d = json.load(open(p, "r", encoding="utf-8"))
+            if isinstance(d, list):
+                for r in d:
+                    if isinstance(r, dict):
+                        s = str(r.get("쇼핑몰주문번호") or r.get("shmaOrdNo") or r.get("주문번호") or "").strip()
+                        if s:
+                            history.add(s)
+        except Exception:
+            continue
+    if not history:
+        return []
+    dups = []
+    for r in rows:
+        s = str(r.get("주문번호") or "").strip()
+        if s and s in history:
+            dups.append({
+                "shmaOrdNo": s,
+                "recv": r.get("받는분 이름"),
+                "code": r.get("상품고유코드"),
+            })
+    return dups
+
+
 def validate_qty_drops(rows, orders):
     """
     풀필 수량 < ordQty 인데 옵션에 명시적 N개/N+N 표기 없는 경우 = silent drop 의심.
@@ -380,44 +419,4 @@ def write_excel(rows, output_path):
             cell.font = data_font
             cell.border = border
 
-    widths = [16, 45, 6, 8, 12, 12, 16, 16, 10, 55, 20, 30, 22,
-              12, 12, 12, 12, 12, 12, 12, 12, 10, 16]
-    for i, w in enumerate(widths):
-        ws.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width = w
-    wb.save(output_path)
-
-
-def split_and_write(rows, base_output):
-    base, ext = os.path.splitext(base_output)
-    ext = ext or ".xlsx"
-    e_rows = [r for r in rows if str(r.get("상품고유코드", "")).startswith("E")]
-    n_rows = [r for r in rows if str(r.get("상품고유코드", "")).startswith("N")]
-    u_rows = [r for r in rows if not str(r.get("상품고유코드", "")).startswith(("E", "N"))]
-    # 주문 원본 순서 유지 (같은 주문번호 내 복수 상품의 row-옵션 매칭 깨짐 방지)
-    created = []
-    if e_rows:
-        p = f"{base}_ether{ext}"
-        write_excel(e_rows, p)
-        created.append(("이더컴퍼니 (공산품)", p, len(e_rows)))
-    if n_rows:
-        p = f"{base}_nutri{ext}"
-        write_excel(n_rows, p)
-        created.append(("뉴트리정 (영양제)", p, len(n_rows)))
-    if u_rows:
-        p = f"{base}_unmapped{ext}"
-        write_excel(u_rows, p)
-        created.append(("미분류", p, len(u_rows)))
-    return created
-
-
-def load_orders(path):
-    ext = os.path.splitext(path)[1].lower()
-    if ext == ".json":
-        return parse_sabang_orders(path)
-    if ext in (".xlsx", ".xls"):
-        return parse_smartstore_xlsx(path)
-    raise SystemExit(f"지원하지 않는 포맷: {ext}")
-
-
-def main():
-    ap = argparse.Argum
+    widths = [16, 45, 6, 8, 12, 12, 16, 16, 10
