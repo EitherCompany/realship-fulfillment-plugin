@@ -1,0 +1,11 @@
+{
+  "name": "EitherCompany realship-fulfillment Marketplace",
+  "version": "0.1.0",
+  "plugins": {
+    "realship-fulfillment-plugin": {
+      "version": "0.1.0",
+      "description": "사방넷 실배송 풀필먼트 자동 등록 + 빈박스/실배송 분류 + 매핑 + 송장처리 통합",
+      "path": "."
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "realship-fulfillment-plugin",
+  "version": "0.1.0",
+  "description": "사방넷 → 사방넷 풀필먼트 실배송 자동 등록 + 송장처리 통합 스킬",
+  "author": "EitherCompany (이창근)",
+  "license": "Private",
+  "skills": [
+    "realship-fulfillment"
+  ]
+}
