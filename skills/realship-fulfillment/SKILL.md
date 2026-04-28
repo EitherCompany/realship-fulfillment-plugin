@@ -739,3 +739,133 @@ btn.click();
 
 → 사용자 검토 후 풀필먼트 SKU 마스터에서 추정 SKU 확인 → product_mapping.json 룰 추가 필요
 
+---
+
+## 🔥 2026-04-28 추가 학습 (필독)
+
+### 1. 사방넷 송장미등록 검색 정확도 (Critical)
+- API direct call로 dateDiv override 시 **3,248건** 반환 (mixed 날짜)
+- 사용자 UI **배송희망일 7일** 검색 결과는 **508건** (정확값)
+- **차이 원인:** 사방넷 서버가 dateDiv override를 제대로 적용 안 하거나 client-side 추가 필터가 있음
+- **결론:** API direct override 사용 X → **사용자가 화면에서 직접 검색 후 엑셀 다운로드** 가 가장 정확
+- 또는: UI를 "송장미등록 체크 → 7일/5일 → 검색" 자연스러운 클릭으로 트리거하고 응답 캡쳐
+
+### 2. 송장미등록 체크박스는 라벨 클릭만으론 토글 안 됨
+- `el-checkbox` 구조: span(label) > checkbox(hidden)
+- **잘못된 패턴:** `labels[0].click()` ← 라벨만 클릭 → checkbox 미토글
+- **정확한 패턴:** XPath로 span 찾기 → `el-checkbox` 부모 click
+```javascript
+var r = document.evaluate("//*[normalize-space(text())='송장미등록']", document, null, XPathResult.ANY_TYPE, null);
+var span = r.iterateNext();
+span.parentElement.click();  // el-checkbox 부모 클릭
+// 검증: span.parentElement.className.indexOf('is-checked')>=0
+```
+
+### 3. 매핑 로직 silent failure 가드 (Critical Bug)
+**증상:** `keywords_all`이 빈 리스트인 룰이 모든 주문에 매칭됨 (`all([]) == True`).
+**올바른 가드:**
+```python
+ka = rule.get('keywords_all') or []
+any_k = rule.get('keywords_any') or []
+if not ka and not any_k: continue  # 빈 룰 SKIP
+ok_all = True if not ka else all(k.lower() in text for k in ka)
+ok_any = True if not any_k else any(k.lower() in text for k in any_k)
+if ok_all and ok_any: match
+```
+
+### 4. keywords_any 처리 누락 (PS70 룰 사례)
+- create_fulfillment_excel.py는 line 120에서 처리 OK
+- **인라인 매핑 코드** 작성 시 keywords_any 처리 명시 필수
+
+### 5. 4-25 이후 데이터에 어제 처리분 0건 — 정상
+- 17건 송장 동기화: 003 출고완료로 넘어감 → 002 검색에서 자연 빠짐
+- 12건 응급 등록: 풀필먼트 송장 발행 후 003 이동
+- → state 차집합이 자연 0이어도 놀랄 것 없음
+
+### 6. 매핑 룰 보강 (영구 반영됨)
+- 상품번호별_매핑: `100001` (아치깔창), `100002` (구름쿠션깔창), `100006` (아쿠아슈즈 18종)
+- 키워드_매핑: 글램루아 스킨 M, 이더커머스 경추베개, 가드웰 무릎보호대 양쪽, 양말 화이트/그레이 20p
+- 코드별_상품명: E00400015 (경추베개), E00400484 (가드웰 양쪽), E00400500~518 (아쿠아슈즈 18종), E00400649 (글램루아 스킨 M)
+
+### 7. 풀필먼트 SKU 마스터 다운로드
+- URL: `/product/shipping`
+- "엑셀받기" 버튼 → 모달 → 전체 + 상품정보 체크 → 받기
+- 33 컬럼 (상품코드, 출고상품명, 바코드, 관리키워드, 유통기한, 무게/크기 등)
+
+### 8. 1차 / 2차 사이클 state.json 관리
+**파일 경로:** `<skill-path>/state.json`
+**구조:**
+```json
+{
+  "YYYY-MM-DD": {
+    "1차_실배송_사방넷_ord_no": ["사방넷ord1", ...],
+    "1차_매핑실패_사방넷_ord_no": [...],
+    "1차_빈박스_SKIP건수": 165
+  }
+}
+```
+**2차 시작 시:** 오늘 날짜 키의 ord_no를 set으로 로드 → 2차 송장미등록 결과에서 차집합
+
+### 9. 풀필먼트 페이지 freeze 우회 (재확인)
+- 엑셀 업로드 [등록] 클릭 후 30초 이상 응답 없음
+- **패턴:** 25~30초 sleep → navigate(/order/add) reset → "엑셀 업로드 최근 이력"에서 "업로드 성공" 확인
+- 등록 자체는 freeze 와중에도 백엔드에서 처리 완료됨
+
+### 10. 풀필먼트 계정 전환 (이더 ↔ 뉴트리)
+- 동일 회사코드 w7298, **아이디로 회사 구분**: eithercompany / nutrijung
+- 동일 비밀번호: `dlejrhddyd1@`
+- 계정 전환 패턴: cookies+localStorage clear → /login navigate → 새 계정 로그인
+
+### 2026-04-28 1차 처리 최종 결과
+- 송장미등록 7일치: 508건 (사용자 다운로드)
+- 4-25 이후: 282건 (잔재 226건 SKIP)
+- 빈박스 SKIP: 165건
+- 실배송: 117건 → 매핑 113 + unmapped 4 (아쿠아슈즈 SKU 미존재)
+- **풀필먼트 업로드: 이더 78 / 뉴트리 35 = 총 113건 ✅**
+- 어제 처리분 391건과 교집합 0건 (이중처리 위험 없음)
+
+
+---
+
+## 🔥 2026-04-28 v0.2.0 — 핵심 학습 7가지 (반드시 따를 것)
+
+### 1. 수량 결정 룰 v2 — 절대 ordQty 누락 금지
+
+**최종 공식:**
+```
+풀필 수량 = ordQty(사방넷) × set_multiplier(옵션문자열)
+```
+
+`set_multiplier(옵션)` 우선순위:
+1. **"1+1" / "2+2" / "3+3"** → `세트_배수` dict 값 (기본 1+1=1, 2+2=2, 3+3=3)
+   - 깔창 "세트(추가할인): 1+1(2세트)" 패턴
+   - 의미: 옵션 자체에서 1세트 = 2개로 표기. ordQty=1 → 2개 출고.
+2. **"N개 :" / "N개," / "N개"** → N
+   - 뉴트리정 "할인이벤트: 3개 : 15% 추가할인" 패턴
+   - ordQty=1, 옵션 "3개" → 3개 출고
+3. **일반 N+N (1+1/2+2/3+3 외)** → N+N 합산
+4. **매칭 없음** → 1 (단순 ordQty 그대로)
+
+**3가지 표준 케이스 (사용자 정의):**
+| 옵션 패턴 | 예시 | ordQty=1 출고 | ordQty=2 출고 |
+|---|---|---|---|
+| 1+1 깔창 (2+2) | "세트(추가할인): 2+2" | 2 | 4 |
+| 뉴트리정 3개입 | "할인이벤트: 3개 : 15%" | 3 | 6 |
+| 단일상품 + 수량 N | 옵션에 수량 표기 없음 | 1 | 2 |
+
+**가드 (silent drop 방지):**
+- `validate_qty_drops()` 함수가 업로드 직전 자동 검증
+- ordQty > 풀필 수량 + 옵션에 N개·N+N 표기 없음 → 🚨 경고 + 차단
+- 어제(2026-04-27) 김현숙시티(2→1), 홍주미(2→1), 권나영(3→1) 사고 재발 방지
+
+### 2. 송장 매칭 — **shmaOrdNo 단일 키만 사용** (받는분 이름 절대 금지)
+
+**사용자 결정 룰 (2026-04-28):** 받는분 이름은 매칭 키로 절대 사용하지 않는다. 쇼핑몰주문번호(shmaOrdNo) 하나만 정확 매칭 키로 사용.
+
+**사고 배경 (김채은)**: 이더 김채은 / 뉴트리 김채은 동성동명 → 받는분 이름 매칭 시 한 운송장(410672316670)이 두 ord_no(2136049937 + 2136049992)에 잘못 등록 → 한 쪽 mall 거부, 다른 쪽 진짜 송장(410672316095)은 사방넷에 등록 안 됨.
+
+**해결 (`match_waybills.py`)**:
+```
+유일한 매칭 키: shmaOrdNo (쇼핑몰주문번호)
+- 풀필먼트 송장의 쇼핑몰주문번호 ↔ 사방넷 ord 의 shmaOrdNo
+- 두 키가 동일하면 매칭 (1:N 합배송 자동 처리, 분할 출고�

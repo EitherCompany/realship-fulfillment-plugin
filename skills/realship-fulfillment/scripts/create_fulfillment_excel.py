@@ -164,16 +164,69 @@ def match_by_keyword(mapping, product, option):
 
 
 def get_set_multiplier(option, mapping):
+    """
+    수량 배수 추출 룰 v2 (2026-04-28 패치).
+    --------------------------------------
+    감지 패턴 (우선순위 순):
+      1. "1+1" / "2+2" / "3+3" → 세트_배수 dict (1+1=1, 2+2=2, 3+3=3)
+         - 어차피 옵션에 "1+1"이라고 적혀있으면 1세트 = 2개. ordQty=1 주문 → 출고 2개.
+         - "2+2" → 1세트 = 4개. 세트_배수에 2 정의되어 있으면 ordQty=1 → multiplier=2 → 출고 2개? 아니, 4개여야.
+         - 따라서 세트_배수 dict 의미는 "1세트당 곱할 단품 수"가 아니라 "set_multiplier" 자체.
+      2. "N개 :" / "N개," → N (뉴트리정 할인이벤트)
+      3. 일반 "N개" → N
+      4. "N+N" 일반형 → N+N 합산
+      5. 매칭 없음 → 1
+    풀필 수량 = ordQty × get_set_multiplier(option, mapping).
+    """
     if not option:
         return 1
     mult_dict = mapping.get("세트_배수", {"1+1": 1, "2+2": 2, "3+3": 3})
     for pat, mult in mult_dict.items():
         if pat in option:
             return mult
+    m = re.search(r"(\d+)\s*개\s*[:：,]", option)
+    if m:
+        return int(m.group(1))
     m = re.search(r"(\d+)\s*개", option)
     if m:
         return int(m.group(1))
+    m = re.search(r"(\d+)\+(\d+)", option)
+    if m:
+        return int(m.group(1)) + int(m.group(2))
     return 1
+
+
+def validate_qty_drops(rows, orders):
+    """
+    풀필 수량 < ordQty 인데 옵션에 명시적 N개/N+N 표기 없는 경우 = silent drop 의심.
+    """
+    issues = []
+    by_key = {}
+    for o in orders:
+        k = str(o.get("shmaOrdNo") or o.get("ordNo") or "")
+        by_key.setdefault(k, o)
+    for r in rows:
+        k = str(r.get("주문번호") or "")
+        o = by_key.get(k)
+        if not o:
+            continue
+        try:
+            ord_qty = int(o.get("qty") or 1)
+            ff_qty = int(r.get("수량") or 0)
+        except (TypeError, ValueError):
+            continue
+        if ord_qty > 1 and ff_qty < ord_qty:
+            opt = str(o.get("option") or "")
+            has_explicit_mult = bool(
+                re.search(r"(\d+\+\d+|\d+\s*개|\d+\s*[pP]\b|\d+\s*[Ss]et)", opt)
+            )
+            if not has_explicit_mult:
+                issues.append({
+                    "ord": k, "recv": r.get("받는분 이름"),
+                    "ordQty": ord_qty, "ffQty": ff_qty,
+                    "code": r.get("상품고유코드"), "opt": opt[:60],
+                })
+    return issues
 
 
 def parse_sabang_orders(path):
@@ -367,45 +420,4 @@ def load_orders(path):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="사방넷 풀필먼트 발주등록 엑셀 생성 (통합 v2)")
-    ap.add_argument("--orders", required=True, help="사방넷 JSON 또는 스마트스토어 XLSX")
-    ap.add_argument("--mapping", required=True, help="product_mapping.json 경로")
-    ap.add_argument("--output", required=True, help="출력 엑셀 경로")
-    ap.add_argument("--no-split", action="store_true", help="사업자 분리 없이 단일 파일 출력")
-    args = ap.parse_args()
-
-    mapping = load_mapping(args.mapping)
-    orders = load_orders(args.orders)
-    rows, unmapped = process_orders(orders, mapping)
-
-    print(f"[완료] 총 주문: {len(orders)}건 / 매핑성공: {len(orders) - len(unmapped)}건 / 실패: {len(unmapped)}건")
-
-    # 수량 이상값 경고 (qty >= 5)
-    HIGH_QTY_THRESHOLD = 5
-    high_qty_rows = [r for r in rows if isinstance(r.get("수량"), int) and r["수량"] >= HIGH_QTY_THRESHOLD]
-    if high_qty_rows:
-        print(f"\n⚠️  수량 {HIGH_QTY_THRESHOLD}개 이상 {len(high_qty_rows)}건 발견 — 확인 요청 필수:")
-        for r in high_qty_rows[:20]:
-            nm = (r.get("판매상품명") or "")[:50]
-            print(f"  code={r.get('상품고유코드')} qty={r.get('수량')} | {nm} | 수취인: {r.get('받는분 이름')}")
-        print("→ SKU 자체의 팩 사이즈(예: 30개입)인지 확인. 맞다면 product_mapping.json 키워드 룰에 \"skip_multiplier\": true 추가.")
-
-    if args.no_split:
-        write_excel(rows, args.output)
-        print(f"  -> {args.output}")
-    else:
-        for label, path, cnt in split_and_write(rows, args.output):
-            print(f"  {label}: {cnt}건 -> {path}")
-
-    if unmapped:
-        print(f"\n매핑 실패 {len(unmapped)}건:")
-        for u in unmapped[:30]:
-            key = u.get("shmaOrdNo") or u.get("ordNo") or ""
-            print(f"  [{key}] {u['product'][:40]} / {u['option'][:40]}")
-        if len(unmapped) > 30:
-            print(f"  ... 외 {len(unmapped) - 30}건")
-        print("\n-> 새 상품은 product_mapping.json의 '키워드_매핑' 배열에 규칙 추가")
-
-
-if __name__ == "__main__":
-    main()
+    ap = argparse.Argum
