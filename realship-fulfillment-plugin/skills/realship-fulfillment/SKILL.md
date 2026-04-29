@@ -152,6 +152,13 @@ python3 scripts/create_fulfillment_excel.py \
 
 ### Step 7 — state.json 갱신
 
+**중요 (v0.2.4 portable 정정)**: state.json 은 플러그인 폴더가 아니라 **사용자 워크스페이스 폴더** 에 저장한다.
+
+플러그인은 install 후 `.remote-plugins/<id>/` 경로에 read-only 로 마운트되므로 state 를 거기에 쓸 수 없음.
+권장 위치: `<워크스페이스>/realship_state.json` (예: 구글드라이브 공유폴더, OneDrive, Downloads 등 사용자 PC 별 자유)
+
+스크립트 사용 시 `--state-path` 인자로 워크스페이스 경로 명시.
+
 ```json
 {
   "last_fulfillment_upload_date": "2026-04-29",
@@ -190,6 +197,7 @@ HTML 리포트 자동 생성, 사용자에게 링크 제출.
 
 ## 변경 이력
 
+- **v0.2.4** (2026-04-28) — Portable 정정. state.json 을 플러그인 폴더에서 제거 (read-only 충돌 방지). 사용자 워크스페이스에 저장하도록 SKILL 명시. tomorrow_flow_checklist.md 제거 (개인 작업기록).
 - **v0.2.3** (2026-04-28) — 마켓플레이스 스키마 정정 (binbox 패턴 정확 복제). 폴더 구조: `realship-fulfillment-plugin/` 하위 폴더로 이동. marketplace.json `$schema` + `owner` + `plugins[]` 배열. plugin.json `keywords` + `homepage` + `repository` + `license:MIT`.
 - **v0.2.2** (2026-04-28) — 단순 룰 정리, plugin-github-sync 스킬 추가, 1차/2차 분할 사이클 명시.
 - **v0.2.1** (2026-04-28) — 중복 발주 가드 (`--history`), `last_fulfillment_upload_date` 추가.
