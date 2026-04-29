@@ -528,3 +528,148 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ============================================
+# v0.2.4 추가 함수 (빈박스 정확 매칭 + state 차집합 + 사용자 수동처리분 SKIP)
+# ============================================
+
+def classify_binbox_v2_4(order):
+    """
+    빈박스 분류 룰 v0.2.4 (느낌표 정확 매칭).
+    
+    이전 버그: 'in msg' 부분 매칭으로 일반 안전 메시지("문 앞에 놓아주세요")까지 빈박스로 잘못 분류
+    수정: '문 앞에 놓아주세요!' (느낌표 포함) 정확 매칭만 빈박스
+    
+    Args:
+        order: dict with shmaNm, rcvrAddr, shpmtMsg, wyblNo
+    
+    Returns: 'binbox' | 'binbox_candidate' | 'realship'
+    """
+    addr = (order.get('rcvrAddr') or order.get('ecptRmteTotAddr') or '').strip()
+    msg = (order.get('shpmtMsg') or order.get('shpmtEtcFldVl') or '').strip()
+    mall = (order.get('shmaNm') or '').strip()
+    
+    # 쿠팡 + 주소에 % → 빈박스 확정
+    if '쿠팡' in mall and '%' in addr:
+        return 'binbox'
+    
+    # 스마트스토어 + 정확히 "문 앞에 놓아주세요!" (느낌표 포함) → 빈박스 확정
+    if '스마트스토어' in mall and '문 앞에 놓아주세요!' in msg:
+        return 'binbox'
+    
+    # 그 외 (느낌표 없는 안전 메시지 포함) → 실배송
+    return 'realship'
+
+
+def filter_user_processed(orders, cutoff_date='2026-04-28'):
+    """
+    사용자 수동처리분 SKIP 룰 v0.2.4.
+    
+    cutoff_date 이전 주문일자는 모두 수동처리 완료된 것으로 간주하고 SKIP.
+    오늘 사이클에서 새로 들어온 주문만 발주 대상.
+    
+    Args:
+        orders: list of dict with ordDt
+        cutoff_date: 'YYYY-MM-DD' 형식 (사이클 시작일 = 어제)
+    
+    Returns: filtered orders (cutoff_date 이상)
+    """
+    return [o for o in orders if (o.get('ordDt','') or '')[:10] >= cutoff_date]
+
+
+def load_state(state_path):
+    """
+    워크스페이스의 realship_state.json 로드.
+    플러그인 폴더에는 저장 금지 (read-only) — 사용자 워크스페이스에 저장.
+    
+    Returns: dict (없으면 빈 dict)
+    """
+    import os, json as _json
+    if not state_path or not os.path.exists(state_path):
+        return {}
+    try:
+        return _json.load(open(state_path, encoding='utf-8'))
+    except Exception:
+        return {}
+
+
+def filter_state_diff(orders, state):
+    """
+    state.json 차집합 v0.2.4 (옵션 다른 추가주문 가드 정정).
+    
+    이전 버그: 같은 shmaOrdNo만 매칭하면 같은 주문번호의 옵션 다른 추가주문이 잘못 SKIP됨
+              (예: 김은숙·박지현 어제 피치/블랙 발주 후 오늘 블루 240-245 발송대기)
+    수정: shmaOrdNo + 사방넷코드 둘 다 매칭 시에만 SKIP
+    
+    Args:
+        orders: list of dict with shmaOrdNo, sabangCode (또는 code)
+        state: load_state() 결과 - {date: {ether_pairs: [(shma, code), ...], ...}}
+    
+    Returns: (clean_orders, skipped_orders)
+    """
+    skip_pairs = set()
+    for date_key, day in (state or {}).items():
+        if not isinstance(day, dict): continue
+        for k in ('ether_pairs', 'nutri_pairs', 'all_pairs'):
+            for p in (day.get(k) or []):
+                if isinstance(p, (list, tuple)) and len(p) >= 2:
+                    skip_pairs.add((str(p[0]).strip(), str(p[1]).strip()))
+    
+    clean, skipped = [], []
+    for o in orders:
+        sh = str(o.get('shmaOrdNo','')).strip()
+        cd = str(o.get('sabangCode','') or o.get('code','')).strip()
+        if (sh, cd) in skip_pairs:
+            skipped.append(o)
+        else:
+            clean.append(o)
+    return clean, skipped
+
+
+def save_state(state_path, today_date, ether_pairs, nutri_pairs):
+    """
+    오늘 풀필먼트 등록 ord_no + 사방넷코드 쌍을 state.json에 저장.
+    다음 사이클에서 차집합 가드로 사용 (어제 발주조회 다운 불필요).
+    
+    Args:
+        state_path: 워크스페이스의 realship_state.json 경로
+        today_date: 'YYYY-MM-DD'
+        ether_pairs: [(shmaOrdNo, sabangCode), ...] 이더 등록분
+        nutri_pairs: [(shmaOrdNo, sabangCode), ...] 뉴트리 등록분
+    """
+    import json as _json, os
+    state = load_state(state_path)
+    state['last_cycle_date'] = today_date
+    state[today_date] = {
+        'ether_pairs': [list(p) for p in ether_pairs],
+        'nutri_pairs': [list(p) for p in nutri_pairs],
+        'all_pairs': [list(p) for p in (list(ether_pairs) + list(nutri_pairs))],
+    }
+    if state_path:
+        os.makedirs(os.path.dirname(os.path.abspath(state_path)) or '.', exist_ok=True)
+        _json.dump(state, open(state_path,'w',encoding='utf-8'), ensure_ascii=False, indent=2)
+    return state
+
+
+def safe_phone(p):
+    """빈 전화 fallback v0.2.4"""
+    p = str(p or '').strip()
+    return p if p and p != '0' else '010-0000-0000'
+
+
+def safe_zip(z):
+    """빈 우편 fallback v0.2.4"""
+    z = str(z or '').strip()
+    return z if z else '00000'
+
+
+def safe_addr(a):
+    """빈 주소 fallback v0.2.4"""
+    return a if a else '주소 사방넷 자동입력'
+
+
+def default_ship_date():
+    """출고희망일 = 다음날 (YYYY-MM-DD) v0.2.4"""
+    from datetime import datetime, timedelta
+    return (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")

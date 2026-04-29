@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment-plugin",
   "version": "0.2.4",
-  "description": "사방넷 실배송 풀필먼트 자동 등록 + 송장처리 통합 플러그인. 1차/2차 분할 사이클 + 수량 룰 v2 + shmaOrdNo 단일 키 매칭 + 중복 발주 가드 + GitHub 자동 동기화.",
+  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.4: 송장처리 제외 / 풀필먼트 등록까지만 / 빈박스 룰 정정 / 매핑 7종 추가 / state.json 차집합 / 스마트스토어 크로스체킹 의무).",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "realship-fulfillment-plugin",
-      "description": "사방넷 실배송 풀필먼트 자동 등록 + 송장처리 통합 플러그인. 매일 1차/2차 사이클로 사방넷 → 사방넷 풀필먼트(이더+뉴트리)에 실배송만 자동 등록. shmaOrdNo 단일 키 매칭(받는분 이름 매칭 절대 금지), ordQty × set_multiplier 수량 룰, 직전 7일 풀필 history 기반 중복 발주 차단, 사전 일괄확정·001→002 자동 의무화. 04-27~04-28 실전 검증 (누적 5,000건+ 처리, 9건 중복 발송 사고 후 가드 영구 도입). plugin-github-sync 스킬로 타 PC 자동 동기화.",
+      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.4): 송장처리 제외, 풀필먼트 등록까지만 자동화. shmaOrdNo 단일 키 매칭, 수량 룰 v2, 빈박스 룰 정정 (! 정확매칭), state.json 차집합 (옵션 다른 추가주문 가드), 매핑 7종 추가, 스마트스토어 일주일치 크로스체킹 의무.",
       "version": "0.2.4",
       "author": {
         "name": "이창근 (이더컴퍼니)"

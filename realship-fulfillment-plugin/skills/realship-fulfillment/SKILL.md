@@ -1,19 +1,14 @@
 ---
 name: realship-fulfillment
 description: >
-  실배송 주문 풀필먼트 자동 등록 + 송장처리 통합 스킬 (v0.2.3).
-  매일 1차/2차 사이클로 사방넷 → 사방넷 풀필먼트(이더+뉴트리)에 실배송만 자동 등록.
-  핵심 가드: shmaOrdNo 단일 키 매칭 (받는분 이름 절대 사용 금지),
-  ordQty × set_multiplier 수량 룰, 직전 7일 풀필 history 기반 중복 발주 차단,
-  사전 일괄확정·001→002 상태변경 의무화, 빈박스 후보 보수적 SKIP.
-  반드시 이 스킬을 사용해야 하는 경우: "실배송 풀필먼트", "풀필먼트 등록", "실배송 등록",
-  "오늘 실배송", "풀필먼트 발주", "실배송 처리해줘", "주문 마감", "2시 마감",
-  "풀필먼트에 넣어줘", "실배송 올려줘", "발주등록해줘", "실배송 1차", "실배송 2차",
-  "송장처리", "운송장 처리", "쇼핑몰 송신", "스마트스토어 발주", "사방넷 발주",
-  "발주 엑셀 만들어줘" 등 실배송 주문을 사방넷/풀필먼트에 등록·송장처리하는 모든 요청.
+  실배송 풀필먼트 자동 등록 스킬 (v0.2.4 — 송장처리 제외 / 풀필먼트 등록까지만).
+  매일 오후 2시 주문 마감 후 사방넷 → 사방넷 풀필먼트(이더+뉴트리)에 실배송만 자동 등록.
+  반드시 이 스킬을 사용해야 하는 경우: "실배송 풀필먼트", "풀필먼트 등록", "실배송 등록", "오늘 실배송",
+  "풀필먼트 발주", "실배송 처리해줘", "주문 마감", "2시 마감", "풀필먼트에 넣어줘", "실배송 올려줘",
+  "발주등록해줘", "실배송 1차", "실배송 2차", "사방넷 발주", "스마트스토어 발주", "발주 엑셀 만들어줘"
 ---
 
-# 실배송 풀필먼트 자동 등록 + 송장처리 (v0.2.3)
+# 실배송 풀필먼트 자동 등록 (v0.2.4)
 
 ## 시스템 정보
 
@@ -24,194 +19,162 @@ description: >
 | 로그인 | `eithercompany` / `dlejzja7801!` |
 | svcAcntId | `mw159514` |
 
-### 사방넷 풀필먼트 (계정 2개)
+### 사방넷 풀필먼트 (계정 2개, 비밀번호 통일)
 | 계정 | 회사코드 | 아이디 | 비밀번호 | 취급 |
 |---|---|---|---|---|
-| 이더컴퍼니 (공산품) | `w7298` | `eithercompany` | `dlejrhddyd1@` | E-코드 |
-| 뉴트리정 (영양제) | `w7298` | `nutrijung` | `dlejrhddyd1@` | N-코드 |
+| 이더컴퍼니 (공산품) | `w7298` | `eithercompany` | `dlejrhddyd1!` | E-코드 |
+| 뉴트리정 (영양제) | `w7298` | `nutrijung` | `dlejrhddyd1!` | N-코드 |
 
 URL: `https://wms02.sbfulfillment.co.kr`
 
-⚠️ 비밀번호 5회 실패 시 10분 잠김. 엉뚱한 계정 업로드 시 "신규 상품 등록" 모달 → **무조건 [취소]**.
+⚠️ **풀필먼트 다운로드 엑셀은 비밀번호 보호** — 위 비번으로 복호화 (msoffcrypto-tool)
 
 ---
 
-## v0.2.3 절대 룰 (창근님 결정 사항 영구 반영)
+## v0.2.4 절대 룰 (사고 기반 영구 반영)
 
-1. **shmaOrdNo 단일 키 매칭** — 받는분 이름 매칭 절대 금지. 김채은 동성동명 cross-account 사고 차단.
-2. **수량 룰 v2** — `풀필 수량 = ordQty × set_multiplier(옵션)`. 김현숙시티(2→1)·홍주미(2→1)·권나영(3→1) 누락 사고 차단.
-3. **중복 발주 가드** — 직전 7일 풀필 history 비교. 같은 쇼핑몰주문번호 발견 시 exit 2 차단.
-4. **사전 일괄확정·001→002 자동** — Vue VM 직접 호출 트릭으로 매번 자동 (사용자 클릭 요청 금지).
-5. **풀필먼트 등록 엑셀 생성 후 → 사용자 수량 검토 의무**.
-6. **빈박스 후보 단순 룰** — "문 앞에 놓아주세요!" → SKIP, 다음 사이클에서 또 SKIP되면 사용자 확인.
-7. **송장처리 매칭 = shmaOrdNo 단일 키**.
-8. **사이클 마지막에 종합 보고서 자동 생성**.
-9. **처리 범위 = `last_fulfillment_upload_date` 14:01 ~ 어제 14:00** (1일 lag, 빈박스 명단 도착 보장).
+1. **shmaOrdNo 단일 키 매칭** — 받는분 이름 매칭 절대 금지 (김채은 cross-account 사고 차단)
+2. **수량 룰 v2** — `풀필 수량 = ordQty × set_multiplier(옵션)` (1+1/2+2/3+3/N개)
+3. **빈박스 룰 정정** — `'문 앞에 놓아주세요!' in msg` 느낌표 정확 매칭만 빈박스. 부분 매칭 금지!
+   - 04-29 사고: 부분 매칭으로 9건(스마트스토어 일반 안전 메시지) 누락 직전
+4. **사전 일괄확정·001→002 자동 의무화** (Vue VM 트릭)
+5. **풀필먼트 엑셀 생성 후 사용자 수량 검토 의무**
+6. **04-28 같은 사이클 시작일 이전 주문 자동 SKIP** (수동처리분 중복 차단)
+7. **state.json: 오늘 풀필먼트 등록 ord_no 저장** → 다음 사이클 차집합 가드 (어제 발주조회 다운 불필요)
+8. **풀필먼트 발주 엑셀 헤더는 반드시 스크립트의 HEADERS 상수 import 사용** — 직접 작성 금지
+9. **빈 전화/우편/주소 fallback** — 010-0000-0000 / 00000 / "주소 사방넷 자동입력"
+10. **출고희망일 자동 = 다음날 (YYYY-MM-DD)**
+11. **풀필먼트 업로드 전 스마트스토어 일주일치 vs 풀필먼트 엑셀 크로스체킹 의무** — 14:00 이후 신규 / 빈박스 잘못 분류 / history 잘못 제외 모두 캐치
 
 ---
 
-## 매 사이클 표준 8단계
+## 매 사이클 표준 6단계 (송장처리 제외)
 
-### Step 0 — 풀필먼트 발주조회 raw 다운로드 (중복 가드용)
+### Step 1 — 사방넷 주문수집 (자동 ✅)
 
-풀필먼트 (이더+뉴트리) 두 계정 모두 → 발주조회 → 직전 7일 → "쇼핑몰주문번호" 컬럼 체크 → 엑셀 다운 → JSON 변환.
-
-### Step 1 — 사방넷 주문수집
-
-주문서수집(자동) 결과 확인 → 5분 대기 후 재조회 → 0건이면 사용자 보고.
-
-### Step 2 — 사방넷 일괄확정 (주문서확정관리, 자동)
-
-7일 범위 + "주문미확정" 필터 → 일괄주문확정. ordCnfrmYn N → Y.
-
-### Step 3 — 사방넷 주문상태변경 001→002 (Vue VM 직접 호출)
+`https://sbadmin03.sabangnet.co.kr/#/order/order-collect-auto`
 
 ```javascript
-// 주문서확인처리 페이지에서:
-const root = document.getElementById('app');
-const inst = root.__vue__;
-
-// 1) 신규주문(001) 데이터 선택
-let tab = null;
-const findTab = (i) => {
-  if (i?.$options?.name === 'ElTable' && i.store.states.data.length > 100) { tab = i; return; }
-  i?.$children?.forEach(findTab);
-};
-findTab(inst);
-const targetRows = tab.store.states.data.filter(r => r.ordStsCd === '001');
-tab.clearSelection();
-targetRows.forEach(r => tab.toggleRowSelection(r, true));
-
-// 2) sbParamMap 주입 + window.opener=window + name 설정
-window.sbParamMap = window.sbParamMap || {};
-window.sbParamMap['order-confirm-order-status-change-popup'] = {
-  bindObject: { dataList: targetRows, ordNoArr: targetRows.map(r => r.ordNo) },
-  resultFn: () => {}
-};
-Object.defineProperty(window, 'opener', { get: () => window, configurable: true });
-window.name = 'order-confirm-order-status-change-popup';
-
-// 3) popup URL 로 navigate (같은 탭)
-window.location.hash = '#/popup/views/pages/order/order-confirm/order-confirm-order-status-change-popup.vue?menuNo=661';
-
-// 4) popup VM 찾고 데이터 set 후 직접 호출
-let popVm = null;
-const findPopVm = (i) => {
-  if (i?.$data?.tableData !== undefined && i?.$data?.modifyAllList !== undefined) { popVm = i; return; }
-  i?.$children?.forEach(findPopVm);
-};
-findPopVm(document.getElementById('app').__vue__);
-
-popVm.multiselectList.splice(0, 0, ...targetRows);
-popVm.allList.splice(0, 0, ...targetRows);
-popVm.tableData.splice(0, 0, ...targetRows);
-popVm.sbForm.list = targetRows.slice();
-popVm.sbForm.orderStatus = '002';
-popVm.sbForm.selectData = '1';
-popVm.compareChangeOrder = '1';
-popVm.selectListSize = targetRows.length;
-popVm.searchListSize = targetRows.length;
-
-popVm.changeOrderStatus();
-popVm.exeOrderConfirmOrderStatusChange();
+// el-table에서 7개 mall row 직접 push (toggleAllSelection은 안 먹음)
+const tables = document.querySelectorAll('.el-table');
+let target = null;
+tables.forEach(t => { const v = t.__vue__; if (v && v.store && v.store.states.data.length === 7) target = v; });
+const data = target.store.states.data;
+data.forEach(r => target.toggleRowSelection(r, true));
 ```
 
-API: `POST /prod-api/customer/order/OrderConfirm/exeOrderConfirmOrderStatusChange` → 200.
+→ "주문수집(신규+주문확인)" 버튼 좌표 (763, 353) 클릭 → 확인 모달 (880, 517) 클릭
 
-### Step 4 — 주문서확인 엑셀 다운로드 + 분류 + 매핑
+→ 새 탭(`127.0.0.1:8181/mall_join/auto_service/client_order_collect.html`) 열리며 SabangSCM 자동 처리
 
-분류:
-- 쿠팡 + 주소 `%` → 빈박스 SKIP
-- "문 앞에 놓아주세요!" → 빈박스 후보 SKIP (state.json 기록)
-- 나머지 → 실배송
+### Step 2 — 사방넷 일괄확정 (자동 ✅)
 
-차집합 적용 (1차: 어제까지 등록 ord 제외, 2차: 1차 등록 ord 제외).
+`https://sbadmin03.sabangnet.co.kr/#/order/order-decide`
 
-### Step 5 — 풀필먼트 엑셀 생성 (가드 자동)
+→ 검색 (935, 252) → 일괄주문확정 (1308, 290) → 일괄주문확정 모달 (768, 410) → 확인 (880, 386)
+
+### Step 3 — 사방넷 001→002 변환 (자동 ✅, Vue VM 트릭)
+
+`#/order/order-confirm` 페이지에서 popup VM 직접 호출 (SKILL 기존 패턴 유지):
+```javascript
+window.sbParamMap['order-confirm-order-status-change-popup'] = { bindObject: { dataList, ordNoArr } };
+Object.defineProperty(window, 'opener', { get: () => window });
+window.name = 'order-confirm-order-status-change-popup';
+window.location.hash = '#/popup/...';
+// popup VM 잡고 → exeOrderConfirmOrderStatusChange()
+```
+
+### Step 4 — 주문서확인 엑셀 다운로드 (⚠️ 사용자 직접 필요)
+
+**한계**: `vm.makeExcelDownload()` 직접 호출 시 400 에러 (body schema 미지). 화면 클릭은 60초 락 + popup 차단으로 무반응.
+
+**워크어라운드**: 사용자가 30초 안에 직접:
+1. 주문서확인처리 → 송장미등록 체크 → 검색
+2. 양식 dropdown → 양식1 / 전체자료
+3. 다운로드 → 엑셀 받기 → 채팅 업로드
+
+스크립트가 받자마자 분류·매핑 자동:
+- 빈박스 SKIP: 쿠팡 + 주소 `%` / 스마트스토어 + `'문 앞에 놓아주세요!'` 정확 매칭
+- 04-28 이전 주문일자 SKIP (수동처리분)
+- state.json의 `last_fulfillment_ord_no` 차집합 (다음 사이클 중복 차단)
+- 실배송 추출 → product_mapping.json 매핑
+
+### Step 5 — 풀필먼트 엑셀 생성 + 크로스체킹
 
 ```bash
 python3 scripts/create_fulfillment_excel.py \
   --orders today_orders.json \
   --mapping scripts/product_mapping.json \
-  --history fulfillment_history_*.json \
-  --output fulfillment_$(date +%Y%m%d)_1차.xlsx
+  --state <workspace>/realship_state.json \
+  --output fulfillment_$(date +%Y%m%d).xlsx
 ```
 
-3대 가드: 중복 발주(v0.2.1), 수량 누락(v2), 고수량 경고.
+**필수 검증 (사용자 confirm 의무)**:
+1. 사업자별 분리 결과 (이더 E* / 뉴트리 N* / 미분류)
+2. 복수구매 그룹 (같은 받는분+주소) → 합배송 OK 여부
+3. 동성동명 의심 (같은 이름, 다른 주소) → 별도 발송 OK 여부
+4. 미분류 → product_mapping.json 키워드 룰 추가 또는 사용자 확정 코드
 
-🚨 **사용자 수량 검토 의무**: 엑셀 생성 후 수량 표 제출 → 승인 후 다음 단계.
+**스마트스토어 일주일치 크로스체킹 의무 (CRITICAL)**:
+사용자에게 스마트스토어 주문조회 일주일치 엑셀 요청 → 우리 엑셀 매칭:
+- **누락 위험**: 스마트스토어 발송대기인데 우리 엑셀에 없음 → 빈박스 잘못 분류 또는 매핑 누락 또는 14:00 이후 신규
+- **중복 위험**: 우리 엑셀에 있는데 스마트스토어 이미 발송완료 → 사방넷 history 잘못 제외 (옵션 다른 추가주문)
 
-### Step 6 — 사업자별 분리 업로드
+### Step 6 — 사업자별 분리 업로드 (⚠️ 사용자 직접)
 
-자동 분리:
-- `_ether.xlsx` → eithercompany 계정
-- `_nutri.xlsx` → nutrijung 계정
-- `_unmapped.xlsx` → 사용자 수동
+**한계**: `wms02.sbfulfillment.co.kr` 페이지가 Chrome MCP 환경에서 spinner만 회전 (Vue 3 hydration 차단)
 
-⚠️ freeze 패턴: 30초 응답 없으면 25~30초 대기 → `/order/add` 재진입 → 업로드 이력 확인.
+**워크어라운드**: 사용자가 직접:
+1. 풀필먼트 로그인 (이더 → 뉴트리 두 계정)
+2. 발주등록 → 엑셀 업로드
+3. 4건 이상 주소·전화 placeholder인 어제 누락분은 화면에서 직접 수정
 
-### Step 7 — state.json 갱신
-
-**중요 (v0.2.4 portable 정정)**: state.json 은 플러그인 폴더가 아니라 **사용자 워크스페이스 폴더** 에 저장한다.
-
-플러그인은 install 후 `.remote-plugins/<id>/` 경로에 read-only 로 마운트되므로 state 를 거기에 쓸 수 없음.
-권장 위치: `<워크스페이스>/realship_state.json` (예: 구글드라이브 공유폴더, OneDrive, Downloads 등 사용자 PC 별 자유)
-
-스크립트 사용 시 `--state-path` 인자로 워크스페이스 경로 명시.
+### Step 7 — state.json 갱신 + 종합 보고서 (자동 ✅)
 
 ```json
 {
-  "last_fulfillment_upload_date": "2026-04-29",
+  "last_cycle_date": "2026-04-29",
   "2026-04-29": {
-    "1차_실배송_사방넷_ord_no": [...],
-    "1차_풀필먼트_등록_쇼핑몰주문번호": [...],
-    "빈박스_후보_사방넷_ord_no": [...],
-    "1차_완료시각": "2026-04-29 11:30 KST"
+    "ether_ord_no_list": [...],
+    "nutri_ord_no_list": [...],
+    "shma_ord_no_list": [...],
+    "complete_time": "2026-04-29 14:50 KST"
   }
 }
 ```
 
-### Step 8 — 종합 보고서
+**state 위치**: 사용자 워크스페이스 폴더 (예: `<Downloads>/realship_state.json`). 플러그인 폴더에는 저장 금지 (read-only).
 
-HTML 리포트 자동 생성, 사용자에게 링크 제출.
-
----
-
-## 송장처리 사이클 (1차+2차 일괄, 보통 풀필 송장 발행 후)
-
-1. 풀필먼트 발주조회 → 오늘 발행 송장 추출
-2. `match_waybills.py` shmaOrdNo 단일 키 매칭
-3. 사방넷 운송장입력(대량) — el-upload `handleStart(file)` 직접 호출
-4. 쇼핑몰운송장송신 — window.open fake hook + `sendWybl()`
-5. mall 거부 3종 분류 (취소거부 후 수동 / 이미 취소 / cross-account)
+종합 보고서 HTML 자동 생성 → 처리 결과 + 발견된 사고 + 매핑 학습 + v다음 패치 항목
 
 ---
 
-## 빈박스 스킬과의 연동
+## 자동화 한계 (Chrome MCP 환경 - 사용자 직접 필요)
 
-- 두 스킬 모두 사방넷 일괄확정·상태변경 수행 → state.json 의 플래그로 중복 작업 방지
-- 빈박스 사이클이 처리한 ord_no 는 `빈박스_처리완료_사방넷_ord_no` 에 기록 → 실배송이 차집합으로 제외
-- 사이클 순서 자유 — 단 실배송에서 "문 앞 배송" 메시지 ord 는 보수적 SKIP, 다음 사이클 재확인
+| 항목 | 한계 | 사용자 작업 |
+|---|---|---|
+| 사방넷 주문서확인처리 엑셀 다운 | API 400 / popup 차단 | 30초 (양식1 + 전체자료 + 다운) |
+| 풀필먼트 사이트 진입 | Vue 3 hydration 차단 | 풀필먼트 로그인 + 발주등록 (5분) |
+| 풀필먼트 엑셀 다운 (state 갱신용) | 동일 | (제거됨 - state.json으로 대체) |
+
+---
+
+## 핵심 가드 (CRITICAL)
+
+1. **shmaOrdNo 단일 키 매칭** (받는분 이름 매칭 절대 금지)
+2. **수량 룰 v2** — set_multiplier(옵션) 적용
+3. **04-29 빈박스 룰 정정** — `'문 앞에 놓아주세요!' in msg` 느낌표 정확 매칭만
+4. **state.json 차집합** — `same shmaOrdNo + same 사방넷코드` 모두 매칭 시에만 SKIP
+5. **헤더는 스크립트 HEADERS 상수 강제** — 발주 엑셀 직접 작성 금지
+6. **스마트스토어 일주일치 크로스체킹 의무** — 누락/중복 모두 캐치
 
 ---
 
 ## 변경 이력
 
-- **v0.2.4** (2026-04-28) — Portable 정정. state.json 을 플러그인 폴더에서 제거 (read-only 충돌 방지). 사용자 워크스페이스에 저장하도록 SKILL 명시. tomorrow_flow_checklist.md 제거 (개인 작업기록).
-- **v0.2.3** (2026-04-28) — 마켓플레이스 스키마 정정 (binbox 패턴 정확 복제). 폴더 구조: `realship-fulfillment-plugin/` 하위 폴더로 이동. marketplace.json `$schema` + `owner` + `plugins[]` 배열. plugin.json `keywords` + `homepage` + `repository` + `license:MIT`.
-- **v0.2.2** (2026-04-28) — 단순 룰 정리, plugin-github-sync 스킬 추가, 1차/2차 분할 사이클 명시.
-- **v0.2.1** (2026-04-28) — 중복 발주 가드 (`--history`), `last_fulfillment_upload_date` 추가.
+- **v0.2.4** (2026-04-29) — 송장처리 제거 (waybill-processing 별도 스킬 분리), 빈박스 룰 정정 (`!` 정확 매칭), 매핑 룰 7종 추가, state.json으로 풀필먼트 발주조회 다운 대체, 스마트스토어 크로스체킹 의무 룰, 자동화 한계 명시.
+- **v0.2.3** (2026-04-28) — 폴더 구조 정정, plugin/marketplace 스키마 정정.
+- **v0.2.2** (2026-04-28) — plugin-github-sync 스킬 추가.
+- **v0.2.1** (2026-04-28) — 중복 발주 가드 (`--history`).
 - **v0.2.0** (2026-04-28) — 수량 룰 v2, shmaOrdNo 단일 키, 사전 일괄확정·001→002 의무화.
-- **v0.1.0** (2026-04-28) — 초기 패키징.
 
----
-
-## 핵심 학습 7가지 (2026-04-27 + 04-28 사고 기반)
-
-1. ordQty 무시 → v2 가드
-2. 받는분 이름 매칭 → shmaOrdNo 단일 키
-3. 후행 신규주문 누락 → 사전 일괄확정·001→002 의무화
-4. 주문상태변경 popup 차단 → window.opener=window + sbParamMap
-5. 쇼핑몰송신 popup 차단 → window.open fake 객체
-6. 9건 중복 발송 → 직전 7일 history 가드
-7. mall 거부 3종 분류 (취소거부 후 수동 / 이미 취소 / cross-account)
