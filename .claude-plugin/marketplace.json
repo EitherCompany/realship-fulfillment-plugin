@@ -1,11 +1,39 @@
 {
-  "name": "EitherCompany realship-fulfillment Marketplace",
-  "version": "0.2.2",
-  "plugins": {
-    "realship-fulfillment-plugin": {
-      "version": "0.2.2",
-      "description": "사방넷 실배송 풀필먼트 자동 등록 + 빈박스/실배송 분류 + 매핑 + 송장처리 통합",
-      "path": "."
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "realship-fulfillment-plugin",
+  "version": "0.2.3",
+  "description": "사방넷 실배송 풀필먼트 자동 등록 + 송장처리 통합 플러그인. 1차/2차 분할 사이클 + 수량 룰 v2 + shmaOrdNo 단일 키 매칭 + 중복 발주 가드 + GitHub 자동 동기화.",
+  "owner": {
+    "name": "EitherCompany",
+    "email": "ghgh404@gmail.com",
+    "url": "https://github.com/EitherCompany"
+  },
+  "plugins": [
+    {
+      "name": "realship-fulfillment-plugin",
+      "description": "사방넷 실배송 풀필먼트 자동 등록 + 송장처리 통합 플러그인. 매일 1차/2차 사이클로 사방넷 → 사방넷 풀필먼트(이더+뉴트리)에 실배송만 자동 등록. shmaOrdNo 단일 키 매칭(받는분 이름 매칭 절대 금지), ordQty × set_multiplier 수량 룰, 직전 7일 풀필 history 기반 중복 발주 차단, 사전 일괄확정·001→002 자동 의무화. 04-27~04-28 실전 검증 (누적 5,000건+ 처리, 9건 중복 발송 사고 후 가드 영구 도입). plugin-github-sync 스킬로 타 PC 자동 동기화.",
+      "version": "0.2.3",
+      "author": {
+        "name": "이창근 (이더컴퍼니)"
+      },
+      "source": "./realship-fulfillment-plugin",
+      "category": "productivity",
+      "keywords": [
+        "realship",
+        "실배송",
+        "풀필먼트",
+        "사방넷",
+        "sabangnet",
+        "ecommerce",
+        "order-processing",
+        "waybill",
+        "송장처리",
+        "smartstore",
+        "스마트스토어",
+        "coupang",
+        "쿠팡",
+        "github-sync"
+      ]
     }
-  }
+  ]
 }
