@@ -1,10 +1,27 @@
 {
   "name": "realship-fulfillment-plugin",
   "version": "0.2.4",
-  "description": "사방넷 → 풀필먼트 실배송 자동 등록 스킬 (v0.2.4: 송장처리 제외, 풀필먼트 등록까지만 / 빈박스 룰 정정 / 매핑 7종 추가 / state.json 차집합 / 스마트스토어 크로스체킹 의무)",
-  "author": "EitherCompany (이창근)",
-  "license": "Private",
-  "skills": [
-    "realship-fulfillment"
+  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.4: 송장처리 제외, 풀필먼트 등록까지만). 매일 1차/2차 사이클로 사방넷 주문수집 → 일괄확정 → 001→002 → 분류·매핑 → 풀필먼트(이더+뉴트리) 발주등록 엑셀 자동 생성. shmaOrdNo 단일 키 매칭(받는분 이름 매칭 절대 금지), ordQty × set_multiplier 수량 룰, state.json 차집합(옵션 다른 추가주문 가드), 빈박스 룰 정정(! 정확매칭), 04-28 같은 사이클 시작일 이전 주문 자동 SKIP, 스마트스토어 일주일치 크로스체킹 의무. plugin-github-sync 스킬로 타 PC 자동 동기화.",
+  "author": {
+    "name": "이창근 (이더컴퍼니)",
+    "email": "ghgh404@gmail.com"
+  },
+  "homepage": "https://github.com/EitherCompany/realship-fulfillment-plugin",
+  "repository": "https://github.com/EitherCompany/realship-fulfillment-plugin",
+  "license": "MIT",
+  "keywords": [
+    "realship",
+    "실배송",
+    "풀필먼트",
+    "사방넷",
+    "sabangnet",
+    "ecommerce",
+    "order-processing",
+    "smartstore",
+    "스마트스토어",
+    "coupang",
+    "쿠팡",
+    "naver",
+    "github-sync"
   ]
 }
