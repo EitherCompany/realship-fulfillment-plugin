@@ -1,4 +1,11 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.2.1",
-  "description": "사방넷 → 사방넷 풀필먼트 실배송 자동 등록 + 송장처리 통합 스킬 (수량 룰 v2 + shmaOrdNo 단일 키 매칭 + 사전 일괄확정·상태변경 의무화 + 중복 발주 가드)
+  "version": "0.2.2",
+  "description": "사방넷 → 사방넷 풀필먼트 실배송 자동 등록 + 송장처리 통합 스킬. 수량 룰 v2 + shmaOrdNo 단일 키 매칭 + 사전 일괄확정·상태변경 의무화 + 중복 발주 가드 + 빈박스 후보 SKIP·재확인 룰 + 1차/2차 분할 사이클 + GitHub 자동 동기화.",
+  "author": "EitherCompany (이창근)",
+  "license": "Private",
+  "skills": [
+    "realship-fulfillment",
+    "plugin-github-sync"
+  ]
+}

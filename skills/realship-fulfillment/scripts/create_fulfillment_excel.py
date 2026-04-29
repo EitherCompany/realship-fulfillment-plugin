@@ -419,4 +419,112 @@ def write_excel(rows, output_path):
             cell.font = data_font
             cell.border = border
 
-    widths = [16, 45, 6, 8, 12, 12, 16, 16, 10
+    widths = [16, 45, 6, 8, 12, 12, 16, 16, 10, 55, 20, 30, 22,
+              12, 12, 12, 12, 12, 12, 12, 12, 10, 16]
+    for i, w in enumerate(widths):
+        ws.column_dimensions[openpyxl.utils.get_column_letter(i + 1)].width = w
+    wb.save(output_path)
+
+
+def split_and_write(rows, base_output):
+    base, ext = os.path.splitext(base_output)
+    ext = ext or ".xlsx"
+    e_rows = [r for r in rows if str(r.get("상품고유코드", "")).startswith("E")]
+    n_rows = [r for r in rows if str(r.get("상품고유코드", "")).startswith("N")]
+    u_rows = [r for r in rows if not str(r.get("상품고유코드", "")).startswith(("E", "N"))]
+    # 주문 원본 순서 유지 (같은 주문번호 내 복수 상품의 row-옵션 매칭 깨짐 방지)
+    created = []
+    if e_rows:
+        p = f"{base}_ether{ext}"
+        write_excel(e_rows, p)
+        created.append(("이더컴퍼니 (공산품)", p, len(e_rows)))
+    if n_rows:
+        p = f"{base}_nutri{ext}"
+        write_excel(n_rows, p)
+        created.append(("뉴트리정 (영양제)", p, len(n_rows)))
+    if u_rows:
+        p = f"{base}_unmapped{ext}"
+        write_excel(u_rows, p)
+        created.append(("미분류", p, len(u_rows)))
+    return created
+
+
+def load_orders(path):
+    ext = os.path.splitext(path)[1].lower()
+    if ext == ".json":
+        return parse_sabang_orders(path)
+    if ext in (".xlsx", ".xls"):
+        return parse_smartstore_xlsx(path)
+    raise SystemExit(f"지원하지 않는 포맷: {ext}")
+
+
+def main():
+    ap = argparse.ArgumentParser(description="사방넷 풀필먼트 발주등록 엑셀 생성 (통합 v2)")
+    ap.add_argument("--history", nargs="*", default=[],
+                    help="이미 풀필먼트에 등록된 발주 내역 JSON 파일들 (중복 발주 가드용). 없으면 가드 비활성화.")
+    ap.add_argument("--force", action="store_true",
+                    help="중복 발주 가드 무시하고 강제 진행 (위험: 사용자 명시 확인 후에만 사용)")
+    ap.add_argument("--orders", required=True, help="사방넷 JSON 또는 스마트스토어 XLSX")
+    ap.add_argument("--mapping", required=True, help="product_mapping.json 경로")
+    ap.add_argument("--output", required=True, help="출력 엑셀 경로")
+    ap.add_argument("--no-split", action="store_true", help="사업자 분리 없이 단일 파일 출력")
+    args = ap.parse_args()
+
+    mapping = load_mapping(args.mapping)
+    orders = load_orders(args.orders)
+    rows, unmapped = process_orders(orders, mapping)
+
+    print(f"[완료] 총 주문: {len(orders)}건 / 매핑성공: {len(orders) - len(unmapped)}건 / 실패: {len(unmapped)}건")
+
+    # 수량 이상값 경고 (qty >= 5)
+    HIGH_QTY_THRESHOLD = 5
+    high_qty_rows = [r for r in rows if isinstance(r.get("수량"), int) and r["수량"] >= HIGH_QTY_THRESHOLD]
+    if high_qty_rows:
+        print(f"\n⚠️  수량 {HIGH_QTY_THRESHOLD}개 이상 {len(high_qty_rows)}건 발견 — 확인 요청 필수:")
+        for r in high_qty_rows[:20]:
+            nm = (r.get("판매상품명") or "")[:50]
+            print(f"  code={r.get('상품고유코드')} qty={r.get('수량')} | {nm} | 수취인: {r.get('받는분 이름')}")
+        print("→ SKU 자체의 팩 사이즈(예: 30개입)인지 확인. 맞다면 product_mapping.json 키워드 룰에 \"skip_multiplier\": true 추가.")
+
+    # 중복 발주 가드 (v0.2.1 추가)
+    if args.history:
+        dups = check_duplicate_with_history(rows, args.history)
+        if dups:
+            print(f"\n🚨 중복 발주 의심 {len(dups)}건 — 이미 풀필먼트에 등록된 쇼핑몰주문번호:")
+            for d in dups[:30]:
+                print(f"  shmaOrdNo={d['shmaOrdNo']} recv={d['recv']} code={d['code']}")
+            if not args.force:
+                print("\n⛔ 업로드 차단. 중복 확인 후 --force 로만 강제 진행 가능.")
+                sys.exit(2)
+            else:
+                print("⚠️ --force 플래그 감지 — 중복 무시하고 진행")
+    else:
+        print("\n💡 --history 미지정 — 중복 발주 가드 비활성. 풀필먼트 발주조회 raw JSON 경로 권장.")
+
+    # 수량 누락(silent drop) 사후 검증 (v2 추가)
+    drops = validate_qty_drops(rows, orders)
+    if drops:
+        print(f"\n🚨 수량 누락 의심 {len(drops)}건 — 풀필 수량 < ordQty 이고 옵션에 N개·N+N 표기 없음:")
+        for d in drops[:30]:
+            print(f"  ord={d['ord']} recv={d['recv']:8s} ordQty={d['ordQty']} → ff={d['ffQty']} code={d['code']} opt={d['opt']}")
+        print("→ ⚠️ 업로드 전 반드시 검토. ordQty가 풀필 수량으로 전파되지 않았을 가능성.")
+
+    if args.no_split:
+        write_excel(rows, args.output)
+        print(f"  -> {args.output}")
+    else:
+        for label, path, cnt in split_and_write(rows, args.output):
+            print(f"  {label}: {cnt}건 -> {path}")
+
+    if unmapped:
+        print(f"\n매핑 실패 {len(unmapped)}건:")
+        for u in unmapped[:30]:
+            key = u.get("shmaOrdNo") or u.get("ordNo") or ""
+            print(f"  [{key}] {u['product'][:40]} / {u['option'][:40]}")
+        if len(unmapped) > 30:
+            print(f"  ... 외 {len(unmapped) - 30}건")
+        print("\n-> 새 상품은 product_mapping.json의 '키워드_매핑' 배열에 규칙 추가")
+
+
+if __name__ == "__main__":
+    main()
