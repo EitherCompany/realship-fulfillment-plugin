@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment-plugin",
-  "version": "0.2.5",
-  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.5: 엑셀 다운로드 완전 폐지 / list API 2종 join 우회 / 등록 직전 ordStsCd 재확인 가드).",
+  "version": "0.2.6",
+  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.6: 수량 룰 v3 / cnt_multiplier 채널 분기 / 비밀번호 정정 / 시리즈 B 룰 / 단계별 0건 검증).",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -11,8 +11,8 @@
   "plugins": [
     {
       "name": "realship-fulfillment-plugin",
-      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.5): searchOrders + WaybillInputSku 두 list API ordNo join으로 엑셀 다운로드 완전 폐지. 등록 직전 ordStsCd 재확인 가드 추가 (취소·반품 row 자동 SKIP). v0.2.4 이전 절대 룰 모두 유지: shmaOrdNo 단일 키, 수량 룰 v2, 빈박스 ! 정확매칭, state.json 차집합, 스마트스토어 크로스체킹 의무.",
-      "version": "0.2.5",
+      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.6): 수량 룰 v3 — set_multiplier(N+N→N) × cnt_multiplier(쿠팡 N개/N박스/N통/N병, 스마트스토어 할인이벤트:N개) 채널 분기 도입. 김성희 4박스 사고 catch + 1+1 ×2 사고 catch 후 전반 보강. 비밀번호 정정(!→@). prdNo 100006 시리즈 B 키워드 룰. 단계별 0건 검증 의무. Python·JS 매핑 단일 명세.",
+      "version": "0.2.6",
       "author": {
         "name": "이창근 (이더컴퍼니)"
       },

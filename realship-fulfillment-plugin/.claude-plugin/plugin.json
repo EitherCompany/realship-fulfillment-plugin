@@ -1,7 +1,7 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.2.5",
-  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.5: 엑셀 다운로드 완전 폐지). 매일 1차/2차 사이클로 사방넷 주문수집 → 일괄확정 → 001→002 → 분류·매핑 → 풀필먼트(이더+뉴트리) 발주등록 엑셀 자동 생성. v0.2.5 핵심 우회: searchOrders + WaybillInputSku 두 list API ordNo join → 엑셀 다운로드 사용 안 함. 등록 직전 ordStsCd 재확인 가드 (취소·반품 row 자동 SKIP). shmaOrdNo 단일 키 매칭, ordQty × set_multiplier 수량 룰, state.json 차집합, 빈박스 ! 정확매칭, 스마트스토어 일주일치 크로스체킹 의무. plugin-github-sync 스킬로 타 PC 자동 동기화.",
+  "version": "0.2.6",
+  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.6: 수량 룰 v3 / cnt_multiplier 채널 분기). 매일 1차/2차 사이클로 사방넷 주문수집 → 일괄확정 → 001→002 → 분류·매핑 → 풀필먼트(이더+뉴트리) 발주등록. v0.2.6 핵심: cnt_multiplier 신규 함수 — 쿠팡 N개/N박스/N통/N병/N개입, 스마트스토어 할인이벤트:N개. set_multiplier(N+N→N) 명세 명문화. 비밀번호 정정(!→@). 시리즈 B(남녀공용 초경량 아쿠아슈즈 논슬립 워터슈즈, E00400656~) 키워드 룰. 단계별 0건 검증 의무. Python·JS 매핑 단일 명세. ffQty 분포 자동 출력. plugin-github-sync로 타 PC 자동 동기화.",
   "author": {
     "name": "이창근 (이더컴퍼니)",
     "email": "ghgh404@gmail.com"

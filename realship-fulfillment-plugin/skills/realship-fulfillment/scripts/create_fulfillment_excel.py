@@ -163,20 +163,22 @@ def match_by_keyword(mapping, product, option):
     return None
 
 
+COUPANG_LOGIN_IDS = {"nutrijung", "mineflow", "cleanintech", "edencorporation1"}
+
+
 def get_set_multiplier(option, mapping):
     """
-    수량 배수 추출 룰 v2 (2026-04-28 패치).
+    set_multiplier 추출 룰 v3 (v0.2.6 — 2026-04-30 정정).
     --------------------------------------
     감지 패턴 (우선순위 순):
       1. "1+1" / "2+2" / "3+3" → 세트_배수 dict (1+1=1, 2+2=2, 3+3=3)
-         - 어차피 옵션에 "1+1"이라고 적혀있으면 1세트 = 2개. ordQty=1 주문 → 출고 2개.
-         - "2+2" → 1세트 = 4개. 세트_배수에 2 정의되어 있으면 ordQty=1 → multiplier=2 → 출고 2개? 아니, 4개여야.
-         - 따라서 세트_배수 dict 의미는 "1세트당 곱할 단품 수"가 아니라 "set_multiplier" 자체.
-      2. "N개 :" / "N개," → N (뉴트리정 할인이벤트)
-      3. 일반 "N개" → N
-      4. "N+N" 일반형 → N+N 합산
-      5. 매칭 없음 → 1
-    풀필 수량 = ordQty × get_set_multiplier(option, mapping).
+      2. 매칭 없음 → 1
+
+    ⚠️ "N개" / "N박스" / "할인이벤트: N개" 같은 cnt_multiplier 패턴은
+       이 함수가 처리하지 않고 get_cnt_multiplier()가 채널 분기로 처리.
+       (v0.2.5 이전은 이 함수가 N개도 잡았으나 채널·박스 단위 미지원으로 버그 발생 → v0.2.6 분리)
+
+    풀필 수량 = ordQt × get_set_multiplier × get_cnt_multiplier (둘 다 적용 시 곱하기).
     """
     if not option:
         return 1
@@ -184,15 +186,36 @@ def get_set_multiplier(option, mapping):
     for pat, mult in mult_dict.items():
         if pat in option:
             return mult
-    m = re.search(r"(\d+)\s*개\s*[:：,]", option)
-    if m:
-        return int(m.group(1))
-    m = re.search(r"(\d+)\s*개", option)
-    if m:
-        return int(m.group(1))
-    m = re.search(r"(\d+)\+(\d+)", option)
-    if m:
-        return int(m.group(1)) + int(m.group(2))
+    return 1
+
+
+def get_cnt_multiplier(option, shma_login_id):
+    """
+    cnt_multiplier 추출 룰 v0.2.6 (2026-04-30 신규 — 김성희 4박스 사고 catch 후 추가).
+    채널별 단위 패턴 분기.
+
+    쿠팡 (CP) — shma_login_id ∈ COUPANG_LOGIN_IDS:
+        "N개입 / N박스 / N통 / N병 / N정 / N개" → N (단위 우선순위 순)
+        예: "[CP] 160g 4박스" → 4
+
+    스마트스토어 (SS) — shma_login_id 가 "ncp_" 로 시작:
+        "할인이벤트:" 키워드 컨텍스트 안의 "N개" → N
+        (할인이벤트 키워드 없으면 N개 매칭 안 함 — 사이즈/색상의 N과 혼동 방지)
+
+    매칭 없음 → 1
+    """
+    if not option:
+        return 1
+    if shma_login_id in COUPANG_LOGIN_IDS:
+        m = re.search(r"(\d+)\s*(?:개입|박스|통|병|정|개)", option)
+        if m:
+            return int(m.group(1))
+        return 1
+    if shma_login_id and str(shma_login_id).startswith("ncp_"):
+        m = re.search(r"할인이벤트[^/]*?(\d+)\s*개", option)
+        if m:
+            return int(m.group(1))
+        return 1
     return 1
 
 
@@ -361,7 +384,10 @@ def process_orders(orders, mapping):
             code, name = matched
             skip_mult = False
         base_qty = int(o.get("qty") or 1)
-        qty = base_qty if skip_mult else base_qty * get_set_multiplier(option, mapping)
+        # v0.2.6: set_multiplier × cnt_multiplier 둘 다 적용. skip_mult 시 set만 스킵.
+        set_mult = 1 if skip_mult else get_set_multiplier(option, mapping)
+        cnt_mult = get_cnt_multiplier(option, o.get("shmaCnctnLoginId") or o.get("shma") or "")
+        qty = base_qty * set_mult * cnt_mult
         rows.append({"상품고유코드": code, "판매상품명": name, **_ship_row(o, qty)})
     return rows, unmapped
 
@@ -390,6 +416,33 @@ def _default_ship_date():
     """기본 출고희망일: 내일 (YYYY-MM-DD)"""
     from datetime import datetime, timedelta
     return (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+
+def print_ffqty_distribution(rows, label=""):
+    """
+    v0.2.6 신규 — 풀필먼트 엑셀 생성 후 ffQty 분포 자동 출력 + 이상치 경고.
+    수량 버그 즉시 catch 용도. 1+1 사고(전 row 짝수) 같은 패턴이 보이면 stderr 경고.
+    """
+    if not rows:
+        return
+    from collections import Counter
+    qty_counts = Counter(int(r.get("수량") or 0) for r in rows)
+    total = sum(qty_counts.values())
+    print(f"--- {label} ffQty 분포 (총 {total}건) ---", file=sys.stderr)
+    for q in sorted(qty_counts.keys()):
+        bar = "▆" * min(40, qty_counts[q])
+        print(f"  ffQty={q}: {qty_counts[q]:>4}건 {bar}", file=sys.stderr)
+    # 이상치: 모든 수량이 짝수면 1+1 ×2 사고 의심
+    odd = sum(c for q, c in qty_counts.items() if q % 2 == 1)
+    even = sum(c for q, c in qty_counts.items() if q % 2 == 0)
+    if odd == 0 and even > 5:
+        print(f"  ⚠️  모든 수량이 짝수 ({even}건). 1+1 사고 의심 — 사용자 확인 필요!", file=sys.stderr)
+    # 이상치: ffQty > 10 row
+    big = [(r.get("주문번호"), r.get("수량")) for r in rows if int(r.get("수량") or 0) > 10]
+    if big:
+        print(f"  ⚠️  ffQty > 10 row {len(big)}건 — 사용자 확인 권장:", file=sys.stderr)
+        for ono, q in big[:5]:
+            print(f"      ordNo={ono} qty={q}", file=sys.stderr)
 
 
 def write_excel(rows, output_path):
@@ -437,10 +490,12 @@ def split_and_write(rows, base_output):
     if e_rows:
         p = f"{base}_ether{ext}"
         write_excel(e_rows, p)
+        print_ffqty_distribution(e_rows, "이더컴퍼니")
         created.append(("이더컴퍼니 (공산품)", p, len(e_rows)))
     if n_rows:
         p = f"{base}_nutri{ext}"
         write_excel(n_rows, p)
+        print_ffqty_distribution(n_rows, "뉴트리정")
         created.append(("뉴트리정 (영양제)", p, len(n_rows)))
     if u_rows:
         p = f"{base}_unmapped{ext}"
