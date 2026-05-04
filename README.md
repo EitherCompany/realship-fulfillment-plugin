@@ -30,7 +30,7 @@
 | 사방넷 로그인 | eithercompany / dlejzja7801! |
 | 풀필먼트 URL | https://wms02.sbfulfillment.co.kr |
 | 풀필먼트 회사코드 | w7298 |
-| 풀필먼트 비밀번호 | dlejrhddyd1! (이더/뉴트리 통일) |
+| 풀필먼트 비밀번호 | dlejrhddyd1@ (이더/뉴트리 통일) |
 
 ## 자동화 한계 (Chrome MCP 환경)
 

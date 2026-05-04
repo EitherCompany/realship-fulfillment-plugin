@@ -83,8 +83,8 @@ location.reload();
 ### Step 0: 준비
 - [ ] Chrome MCP에서 사방넷 관리자(sbadmin03) 로그인 상태 확인
 - [ ] 사방넷 풀필먼트(wms02) 양쪽 계정 확인:
-  - 이더컴퍼니: `w7298 / eithercompany / dlejrhddyd1!`
-  - 뉴트리정: `w7298 / nutrijung / dlejrhddyd1!`
+  - 이더컴퍼니: `w7298 / eithercompany / dlejrhddyd1@`
+  - 뉴트리정: `w7298 / nutrijung / dlejrhddyd1@`
 
 ### Step 1: 사방넷 주문수집 실행
 - [ ] 사방넷 주문서수집(자동) 페이지 → 쇼핑몰 전체선택 → **"주문수집(신규+주문확인)"**

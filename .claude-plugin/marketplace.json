@@ -1,39 +1,11 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "realship-fulfillment-plugin",
-  "version": "0.2.6",
-  "description": "사방넷 → 풀필먼트 실배송 자동 등록 플러그인 (v0.2.6: 수량 룰 v3 / cnt_multiplier 채널 분기 / 비밀번호 정정 / 시리즈 B 룰 / 단계별 0건 검증).",
-  "owner": {
-    "name": "EitherCompany",
-    "email": "ghgh404@gmail.com",
-    "url": "https://github.com/EitherCompany"
-  },
-  "plugins": [
-    {
-      "name": "realship-fulfillment-plugin",
-      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.6): 수량 룰 v3 — set_multiplier(N+N→N) × cnt_multiplier(쿠팡 N개/N박스/N통/N병, 스마트스토어 할인이벤트:N개) 채널 분기 도입. 김성희 4박스 사고 catch + 1+1 ×2 사고 catch 후 전반 보강. 비밀번호 정정(!→@). prdNo 100006 시리즈 B 키워드 룰. 단계별 0건 검증 의무. Python·JS 매핑 단일 명세.",
-      "version": "0.2.6",
-      "author": {
-        "name": "이창근 (이더컴퍼니)"
-      },
-      "source": "./realship-fulfillment-plugin",
-      "category": "productivity",
-      "keywords": [
-        "realship",
-        "실배송",
-        "풀필먼트",
-        "사방넷",
-        "sabangnet",
-        "ecommerce",
-        "order-processing",
-        "waybill",
-        "송장처리",
-        "smartstore",
-        "스마트스토어",
-        "coupang",
-        "쿠팡",
-        "github-sync"
-      ]
+  "name": "EitherCompany realship-fulfillment Marketplace",
+  "version": "0.2.5",
+  "plugins": {
+    "realship-fulfillment-plugin": {
+      "version": "0.2.5",
+      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.4: 송장처리 제외 / 풀필먼트 등록까지만)",
+      "path": "."
     }
-  ]
+  }
 }
