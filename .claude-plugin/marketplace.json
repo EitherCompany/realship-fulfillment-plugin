@@ -1,10 +1,10 @@
 {
   "name": "EitherCompany realship-fulfillment Marketplace",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "plugins": {
     "realship-fulfillment-plugin": {
-      "version": "0.2.5",
-      "description": "사방넷 → 풀필먼트 실배송 자동 등록 (v0.2.4: 송장처리 제외 / 풀필먼트 등록까지만)",
+      "version": "0.3.0",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.3.0: 자동화 포기·반자동화 전환). 사용자가 사방넷 직접 조작 → Claude는 엑셀 업로드 받아 분류·매핑·풀필먼트 엑셀 생성·특이사항 리포트.",
       "path": "."
     }
   }
