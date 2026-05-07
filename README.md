@@ -1,44 +1,62 @@
-# realship-fulfillment-plugin (v0.3.1)
+# realship-fulfillment-plugin (v0.4.0)
 
-**사방넷 → 풀필먼트 실배송 반자동화 플러그인 — 9가지 결함 차단 + 사용자 confirm 게이트**
+**데이터 드리븐 룰 엔진 + 충돌 자동 감지 + fixture 회귀 테스트**
 
-## v0.3.1 패치 — 9가지 결함 영구 차단
+## v0.4.0 메이저 변경
 
-2026-05-07 사이클에서 사용자가 잡아낸 결함:
+### 데이터 드리븐 룰 엔진
+모든 매핑 룰이 `scripts/mapping_rules.json` 한 파일에. **Python 코드 수정 없이 새 상품 추가 가능.**
 
-1. **SKU 매트릭스 brand 분리** (이더/루미솔 31건 오매핑)
-2. **수량 룰 v3.1: N+N → ×N** (깔창 35건 ×2 잘못)
-3. **베개 매핑 순서: 덴코 → 슬루나 → 경추** (1건)
-4. **영양제 N개 옵션 수량** (13건 누락)
-5. **우편번호 raw passthrough** (00000 fallback 173건 강제 잘못)
-6. **출고희망일 빈칸**
-7. **동호수 쉼표** (행정구역 동 제외)
-8. **post-cycle SKIP 룰 폐기** (사용자 다운 시점 컷오프)
-9. **state.json 거짓 기록 가능성 인지** (사용자 수동 처리분 → cross-validate 필수)
+```json
+{
+  "mapping_rules": [
+    {"id":"베개_덴코",   "priority":20, "all":["덴코","베개"],          "code":"E00400497"},
+    {"id":"베개_경추",   "priority":22, "all":["경추","베개"], "none":["덴코"], "code":"E00400015"},
+    ...
+  ],
+  "quantity_rules": [...],
+  "binbox_rules": [...],
+  "auto_stop_thresholds": {...}
+}
+```
 
-## 사용자 confirm 게이트 (CRITICAL)
+### 단일 평가 엔진 + 충돌 감지
+- 우선순위 정렬 후 첫 매칭 룰 사용
+- 동일 우선순위 다중 매칭 시 **충돌 감지** → 자동 stop
+- if/elif 분기 제거 → 룰 추가가 안전
 
-매핑 후 풀필먼트 엑셀 즉시 생성 X. **검증 보고서 먼저 → 사용자 OK 후에만 엑셀 생성**.
+### fixture 회귀 테스트
+`scripts/fixture_tests.json` 20개 매핑 + 4개 주소 + 5개 빈박스. 매 사이클 시작 시 자동 통과 의무.
 
-자동 stop 조건:
-- 미매핑 > 0
-- 한 코드 50%↑ 몰림 (양말 베스트셀러 화이트리스트)
-- 다중 brand 카테고리에서 한 brand 100%
-- 신규 옵션 패턴
-- 우편번호 00000 fallback > 5%
-- cross-validate 중복 > 0
+### 잔재 4개 삭제
+- `references/mapping_operation_rules.md` (v0.2.x)
+- `references/tomorrow_flow_checklist.md` (2026-04-24)
+- `scripts/match_waybills.py` (송장처리 별도 스킬)
+- `state.json` (사용자 워크스페이스에 두라고 SKILL에 명시)
 
-## fixture 테스트셋 (매 사이클 시작 시 자동 통과 의무)
+## 새 상품 추가하는 법
 
-scripts/product_mapping.json의 fixture_test_cases 8개. 통과 못하면 ABORT.
+mapping_rules.json에 룰 객체 한 줄:
 
-## 워크플로우 (반자동화 7단계)
+```json
+{"id":"새상품_X","priority":35,"all":["키워드1","키워드2"],"code":"E00400999"}
+```
 
-자세한 절차는 SKILL.md 참조.
+fixture_tests.json에 검증 케이스 추가:
+
+```json
+{"id":"새상품_X_test","product":"...","option":"...","expected_code":"E00400999","expected_qty_per_ord":1}
+```
+
+→ 코드 수정 0줄. 다음 사이클부터 적용.
+
+## 워크플로우 (자세한 절차)
+
+`realship-fulfillment-plugin/skills/realship-fulfillment/SKILL.md` 참조.
 
 ## 변경 이력
 
-- **v0.3.1** (2026-05-07) — 9가지 결함 + 사용자 confirm 게이트 + 자가검증 + fixture 테스트
-- **v0.3.0** (2026-05-06) — 메이저: 자동화 포기·반자동화 전환
-- **v0.2.5** (2026-05-04) — 풀필먼트 업로드 자동화
-- **v0.2.0** (2026-04-28) — 수량 룰 v2 (v3.1로 정정), shmaOrdNo 단일 키
+- **v0.4.0** (2026-05-07) — 데이터 드리븐 룰 엔진, fixture 20개, 잔재 삭제
+- **v0.3.1** (2026-05-07) — 9가지 결함 fix
+- **v0.3.0** (2026-05-06) — 메이저 반자동화 전환
+- v0.2.5 (2026-05-04) / v0.2.4 (2026-04-29) / v0.2.0 (2026-04-28)

@@ -1,13 +1,10 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.3.1",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.3.1 패치 — 9가지 결함 fix). v0.3.0 반자동화 전환 + 9개 사고 영구 차단: ① SKU 매트릭스 brand 분리 (이더/루미솔 31건 오매핑), ② 수량 룰 v3.1 — N+N → ×N (SKU 자체가 1+1 셋트, 깔창 35건 ×2 잘못), ③ 베개 매핑 순서 (덴코→슬루나→경추, 1건 오매핑), ④ 영양제 N개 옵션 수량 룰 (13건 누락), ⑤ 우편번호 raw passthrough (00000 fallback 173건 강제), ⑥ 출고희망일 빈칸, ⑦ 동호수 쉼표 (행정구역 동 제외), ⑧ post-cycle SKIP 룰 폐기 (사용자 다운 시점 컷오프), ⑨ state.json 거짓 기록 가능성 인지 (사용자 수동 처리분). 사용자 confirm 게이트 강제 + 자가검증 체크리스트 + 자동 stop 조건 + fixture 테스트셋. cross-validate 모드 + 졸업 카운터.",
-  "author": {
-    "name": "이창근 (이더컴퍼니)",
-    "email": "ghgh404@gmail.com"
-  },
+  "version": "0.4.0",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.4.0 메이저: 데이터 드리븐 룰 엔진). 매핑 룰을 mapping_rules.json에 모두 명시 (Python 코드 수정 X). 단일 평가 엔진 + 우선순위 + 충돌 자동 감지. fixture_tests.json으로 광범위 회귀 테스트. 새 상품/브랜드 추가 = JSON 한 줄 추가. 사용자 confirm 게이트 + 자동 stop 조건 + cross-validate 모드. 잔재 4개 삭제 (mapping_operation_rules / tomorrow_flow_checklist / match_waybills / state.json) — 깔끔한 최신본.",
+  "author": {"name": "이창근 (이더컴퍼니)", "email": "ghgh404@gmail.com"},
   "homepage": "https://github.com/EitherCompany/realship-fulfillment-plugin",
   "repository": "https://github.com/EitherCompany/realship-fulfillment-plugin",
   "license": "MIT",
-  "keywords": ["realship","실배송","풀필먼트","사방넷","sabangnet","ecommerce","semi-automation","반자동화","cross-validate","github-sync"]
+  "keywords": ["realship","실배송","풀필먼트","사방넷","sabangnet","ecommerce","semi-automation","반자동화","rule-engine","data-driven","cross-validate","github-sync"]
 }

@@ -1,0 +1,65 @@
+{
+  "version": "0.4.0",
+  "updated_at": "2026-05-07",
+  "_도움말": "모든 매핑 룰 + 수량 룰 + 빈박스 룰 + 주소 포맷팅 룰 + 사용자 fallback. Python 코드 수정 없이 이 파일만 편집. 우선순위 낮을수록 먼저 평가.",
+  "mapping_rules": [
+    {"id":"구름깔창_루미솔",     "priority":10, "all":["구름","깔창","루미솔"],                 "matrix":{"category":"구름깔창","brand":"루미솔","extract":["color","size"]}},
+    {"id":"구름깔창_이더",       "priority":11, "all":["구름","깔창"],"none":["루미솔"],         "matrix":{"category":"구름깔창","brand":"이더","extract":["color","size"]}},
+    {"id":"벌집깔창",            "priority":12, "any_all":[["벌집","깔창"],["메쉬","깔창"],["평발","깔창"]], "matrix":{"category":"벌집깔창","extract":["size"]}},
+    {"id":"양말",                "priority":13, "all":["양말"],                                  "matrix":{"category":"양말","extract":["color"]}},
+    {"id":"글램루아",            "priority":14, "all":["글램루아"],                              "matrix":{"category":"글램루아","extract":["color_combo","size"]}},
+    {"id":"아쿠아슈즈",          "priority":15, "all":["아쿠아슈즈"],                            "matrix":{"category":"아쿠아슈즈","extract":["color","size"]}},
+    {"id":"베개_덴코",           "priority":20, "all":["덴코","베개"],                          "code":"E00400497"},
+    {"id":"베개_슬루나",         "priority":21, "all":["슬루나","호텔","베개"],                  "code":"E00400013"},
+    {"id":"베개_이더경추",       "priority":22, "all":["경추","베개"],"none":["덴코","슬루나"],   "code":"E00400015"},
+    {"id":"가드웰_무릎_양쪽",    "priority":30, "all":["가드웰","무릎","양쪽"],                  "code":"E00400484"},
+    {"id":"뉴트리_상어연골",     "priority":40, "all":["상어연골"],                              "code":"N00200000"},
+    {"id":"뉴트리_글루타치온",   "priority":41, "all":["글루타치온"],                            "code":"N00200002"},
+    {"id":"뉴트리_브로멜라인",   "priority":42, "all":["브로멜라인"],                            "code":"N00200003"},
+    {"id":"뉴트리_멜라토닌_5mg", "priority":43, "all":["멜라토닌","5mg"],                       "code":"N00200004"},
+    {"id":"뉴트리_멜라토닌_2mg", "priority":44, "all":["멜라토닌","2mg"],                       "code":"N00200001"},
+    {"id":"뉴트리_멜라토닌_default","priority":45, "all":["멜라토닌"],"none":["5mg","2mg"],      "code":"N00200004"},
+    {"id":"뉴트리_알파CD",       "priority":46, "any":["알파CD","알파시클로덱스트린","알파씨디","알파시디"], "code":"N00200005"},
+    {"id":"뉴트리_콜린_미오이노시톨","priority":47, "all":["콜린","미오이노시톨"],               "code":"N00200006"},
+    {"id":"뉴트리_비오틴",       "priority":48, "all":["비오틴"],                                "code":"N00200007"},
+    {"id":"뉴트리_오메가3_rTG",  "priority":49, "any":["초임계 알티지","rTG","오메가3"],         "code":"N00200008"},
+    {"id":"뉴트리_PS70",         "priority":50, "any":["PS70","포스파티딜세린"],                "code":"N00200009"},
+    {"id":"뉴트리_밀크씨슬",     "priority":51, "all":["밀크씨슬"],                              "code":"N00200012"},
+    {"id":"뉴트리_비타민D",      "priority":52, "all":["비타민D"],                               "code":"N00200013"},
+    {"id":"뉴트리_멀티비타민",   "priority":53, "all":["멀티비타민"],                            "code":"N00200014"},
+    {"id":"뉴트리_루테인",       "priority":54, "all":["루테인"],                                "code":"N00200015"},
+    {"id":"뉴트리_마그네슘",     "priority":55, "all":["마그네슘"],                              "code":"N00200016"},
+    {"id":"뉴트리_비타민B",      "priority":56, "all":["비타민B"],                               "code":"N00200017"}
+  ],
+  "quantity_rules": [
+    {"id":"sku_n_plus_n",   "regex":"(\\d+)\\s*\\+\\s*(\\d+)", "match_type":"equal_groups", "multiplier":"first_group", "note":"SKU가 1+1 셋트인 깔창류: N+N → ×N"},
+    {"id":"event_n_count",  "regex":"할인이벤트[:\\s]*(\\d+)개", "multiplier":"first_group", "note":"영양제 할인이벤트 N개"},
+    {"id":"n_count_colon",  "regex":"(\\d+)개\\s*:", "multiplier":"first_group", "note":"옵션 'N개 :' (N개 묶음)"}
+  ],
+  "binbox_rules": [
+    {"id":"쿠팡_체험단",     "mall":"쿠팡","field":"수취인주소(4)","contains":"%"},
+    {"id":"스마트_체험단",   "mall":"스마트스토어","field":"배송메세지","contains_exact":"문 앞에 놓아주세요!"}
+  ],
+  "address_format": {
+    "comma_pattern": "(\\s+)(\\d+동\\s*\\d*호?\\b|[A-Z]+[\\d\\-]*동\\b|\\d+호\\b)",
+    "skip_if_already_comma_before": true,
+    "_도움말": "행정구역 동(한글+동)은 자동 제외. \\d+동/[A-Z]+동/\\d+호 패턴 첫 매칭 앞에 쉼표"
+  },
+  "user_fallback": {
+    "phone": "010-0000-0000",
+    "zip": "00000",
+    "address": "주소 사방넷 자동입력"
+  },
+  "color_normalization": {
+    "블랙": ["블랙","검은색","검정"],
+    "그레이": ["그레이","회색"]
+  },
+  "auto_stop_thresholds": {
+    "unmapped_count": 0,
+    "single_code_pct_excl_whitelist": 50,
+    "code_whitelist_high_pct": ["E00400023"],
+    "zip_fallback_pct": 5,
+    "crossvalidate_dup_count": 0,
+    "lumisol_count_warning": 1
+  }
+}

@@ -1,10 +1,10 @@
 {
   "name": "EitherCompany realship-fulfillment Marketplace",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "plugins": {
     "realship-fulfillment-plugin": {
-      "version": "0.3.1",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.3.1: 9가지 결함 fix + 사용자 confirm 게이트 + 자가검증 + cross-validate 모드 + fixture 테스트)",
+      "version": "0.4.0",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.4.0 메이저: 데이터 드리븐 룰 엔진 + 충돌 자동 감지 + fixture 광범위)",
       "path": "."
     }
   }
