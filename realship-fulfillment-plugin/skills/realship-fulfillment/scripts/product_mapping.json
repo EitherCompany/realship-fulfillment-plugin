@@ -1,16 +1,28 @@
 {
   "_meta": {
-    "version": "0.3.0",
-    "updated_at": "2026-05-06",
-    "note": "v0.3.0 반자동화 — SKU 마스터 매트릭스는 create_fulfillment_excel.py가 자동 빌드. 이 파일은 fallback / 영양제 / 직접 룰만 담는다."
+    "version": "0.3.1",
+    "updated_at": "2026-05-07",
+    "note": "v0.3.1 — 9가지 결함 fix. SKU 매트릭스는 create_fulfillment_excel.py가 brand 분리해서 자동 빌드 (build_sku_matrix). 이 파일은 fallback / 영양제 / 직접 룰 전용."
   },
+  "key_fixes_v0_3_1": [
+    "1. SKU 매트릭스 brand 분리 (이더/루미솔)",
+    "2. 수량 룰 v3.1: N+N → ×N (SKU 자체가 1+1 셋트)",
+    "3. 베개 매핑 순서: 덴코 → 슬루나 → 경추",
+    "4. 영양제 N개 옵션 수량 룰 추가",
+    "5. 우편번호 raw passthrough",
+    "6. 출고희망일 빈칸",
+    "7. 동호수 쉼표 (행정구역 동 제외)",
+    "8. post-cycle SKIP 룰 폐기 (사용자 다운 시점 컷오프)",
+    "9. state.json 거짓 가능성 인지 (cross-validate 우선)"
+  ],
   "키워드_매핑": [
     {"name": "글램루아_스킨_단색_L", "keywords_all": ["글램루아", "스킨"], "keywords_none": ["+","블랙","그레이","화이트"], "size": "L", "code": "E00400648"},
     {"name": "글램루아_스킨_단색_M", "keywords_all": ["글램루아", "스킨"], "keywords_none": ["+","블랙","그레이","화이트"], "size": "M", "code": "E00400649"},
     {"name": "글램루아_스킨_단색_S", "keywords_all": ["글램루아", "스킨"], "keywords_none": ["+","블랙","그레이","화이트"], "size": "S", "code": "E00400650"},
     {"name": "글램루아_스킨_단색_XL", "keywords_all": ["글램루아", "스킨"], "keywords_none": ["+","블랙","그레이","화이트"], "size": "XL", "code": "E00400651"},
-    {"name": "이더커머스_경추베개", "keywords_all": ["경추", "베개"], "code": "E00400015"},
-    {"name": "덴코_베개", "keywords_all": ["덴코", "베개"], "code": "E00400497"},
+    {"name": "베개_덴코_호텔", "keywords_all": ["덴코", "베개"], "priority": 1, "code": "E00400497"},
+    {"name": "베개_슬루나_호텔", "keywords_all": ["슬루나", "호텔", "베개"], "priority": 2, "code": "E00400013"},
+    {"name": "베개_이더_경추", "keywords_all": ["경추", "베개"], "priority": 3, "code": "E00400015"},
     {"name": "가드웰_무릎보호대_양쪽", "keywords_all": ["가드웰", "무릎", "양쪽"], "code": "E00400484"}
   ],
   "영양제_키워드_매핑": [
@@ -32,19 +44,29 @@
     {"name": "뉴트리_마그네슘", "keywords_all": ["마그네슘"], "code": "N00200016"},
     {"name": "뉴트리_비타민B", "keywords_all": ["비타민B"], "code": "N00200017"}
   ],
+  "수량_룰_v3_1": {
+    "_도움말": "SKU 단위가 N+N 셋트인지 단일인지에 따라 다름",
+    "N_plus_N": "1+1 → ×1, 2+2 → ×2, 3+3 → ×3 (SKU가 1+1 셋트인 깔창류)",
+    "N개_콜론": "할인이벤트: N개 → ×N (SKU 단일 단위인 영양제·베개)",
+    "fallback": 1
+  },
   "색상_정규화_쌍": [
     ["블랙", "검은색", "검정"],
     ["그레이", "회색"]
   ],
-  "세트_배수_규칙": {
-    "_도움말": "1+1 → 2배, 2+2 → 4배, N세트 → N배",
-    "1+1": 2,
-    "2+2": 4,
-    "3+3": 6
-  },
   "사용자_fallback": {
     "전화번호": "010-0000-0000",
     "우편번호": "00000",
     "주소": "주소 사방넷 자동입력"
-  }
+  },
+  "fixture_test_cases": [
+    {"product": "바디인솔 1+1 기능성 구름 깔창", "option": "색상: 그레이 / 사이즈: 245-250 / 1+1(2세트)", "expected_code": "E00400008", "expected_qty_per_ord": 1, "note": "이더 default, 루미솔 X"},
+    {"product": "바디인솔 1+1 기능성 구름 깔창", "option": "색상: 블랙 / 사이즈: 235-240 / 2+2(4세트 15%)", "expected_code": "E00400003", "expected_qty_per_ord": 2},
+    {"product": "덴코 일자목 거북목 경추베개 호텔베개", "option": "할인이벤트: 2개 : 10%", "expected_code": "E00400497", "expected_qty_per_ord": 2},
+    {"product": "이더커머스 목편한 클라우드 경추 베개", "option": "할인이벤트: 1개", "expected_code": "E00400015", "expected_qty_per_ord": 1},
+    {"product": "가드웰 무릎보호대 마사지볼", "option": "양쪽", "expected_code": "E00400484", "expected_qty_per_ord": 1},
+    {"product": "뉴트리정 글루타치온 57000", "option": "할인이벤트: 3개 : 15%", "expected_code": "N00200002", "expected_qty_per_ord": 3},
+    {"product": "뉴트리정 비오틴", "option": "할인이벤트: 1개", "expected_code": "N00200007", "expected_qty_per_ord": 1},
+    {"product": "뉴트리정 PS70 포스파티딜세린", "option": "할인이벤트: 6개 : 30%", "expected_code": "N00200009", "expected_qty_per_ord": 6}
+  ]
 }

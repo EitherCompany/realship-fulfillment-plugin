@@ -1,10 +1,10 @@
 {
   "name": "EitherCompany realship-fulfillment Marketplace",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "plugins": {
     "realship-fulfillment-plugin": {
-      "version": "0.3.0",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.3.0: 자동화 포기·반자동화 전환). 사용자가 사방넷 직접 조작 → Claude는 엑셀 업로드 받아 분류·매핑·풀필먼트 엑셀 생성·특이사항 리포트.",
+      "version": "0.3.1",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.3.1: 9가지 결함 fix + 사용자 confirm 게이트 + 자가검증 + cross-validate 모드 + fixture 테스트)",
       "path": "."
     }
   }
