@@ -1,10 +1,26 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.4.0",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.4.0 메이저: 데이터 드리븐 룰 엔진). 매핑 룰을 mapping_rules.json에 모두 명시 (Python 코드 수정 X). 단일 평가 엔진 + 우선순위 + 충돌 자동 감지. fixture_tests.json으로 광범위 회귀 테스트. 새 상품/브랜드 추가 = JSON 한 줄 추가. 사용자 confirm 게이트 + 자동 stop 조건 + cross-validate 모드. 잔재 4개 삭제 (mapping_operation_rules / tomorrow_flow_checklist / match_waybills / state.json) — 깔끔한 최신본.",
-  "author": {"name": "이창근 (이더컴퍼니)", "email": "ghgh404@gmail.com"},
+  "version": "0.4.1",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.4.1: 마켓플레이스 매니페스트 형식 정정 — plugins array + source 키 + owner + $schema). v0.4.0 메이저 (데이터 드리븐 룰 엔진) 기반.",
+  "author": {
+    "name": "이창근 (이더컴퍼니)",
+    "email": "ghgh404@gmail.com"
+  },
   "homepage": "https://github.com/EitherCompany/realship-fulfillment-plugin",
   "repository": "https://github.com/EitherCompany/realship-fulfillment-plugin",
   "license": "MIT",
-  "keywords": ["realship","실배송","풀필먼트","사방넷","sabangnet","ecommerce","semi-automation","반자동화","rule-engine","data-driven","cross-validate","github-sync"]
+  "keywords": [
+    "realship",
+    "실배송",
+    "풀필먼트",
+    "사방넷",
+    "sabangnet",
+    "ecommerce",
+    "semi-automation",
+    "반자동화",
+    "rule-engine",
+    "data-driven",
+    "cross-validate",
+    "github-sync"
+  ]
 }
