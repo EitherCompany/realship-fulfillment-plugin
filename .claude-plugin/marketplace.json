@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment",
-  "version": "0.4.1",
-  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 반자동화 마켓플레이스",
+  "version": "0.5.0",
+  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 반자동화 마켓플레이스 (v0.5.0: 합배송 인접 정렬)",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -12,11 +12,23 @@
     {
       "name": "realship-fulfillment-plugin",
       "source": "./realship-fulfillment-plugin",
-      "version": "0.4.1",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.4.1: 마켓플레이스 매니페스트 형식 정정 — plugins array + source + owner + $schema 추가). v0.4.0 메이저 (데이터 드리븐 룰 엔진 + 충돌 감지 + fixture 20개 + 잔재 4개 삭제) 기반.",
-      "author": {"name": "이창근 (이더컴퍼니)"},
+      "version": "0.5.0",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.0: 합배송 (받는분+전화) 그룹 인접 정렬). v0.4.x 룰 엔진 + cross-validate + fixture + 사용자 confirm 게이트 유지.",
+      "author": {
+        "name": "이창근 (이더컴퍼니)"
+      },
       "category": "ecommerce",
-      "keywords": ["realship","실배송","풀필먼트","사방넷","sabangnet","semi-automation","반자동화","rule-engine","github-sync"]
+      "keywords": [
+        "realship",
+        "실배송",
+        "풀필먼트",
+        "사방넷",
+        "sabangnet",
+        "semi-automation",
+        "반자동화",
+        "rule-engine",
+        "github-sync"
+      ]
     }
   ]
 }

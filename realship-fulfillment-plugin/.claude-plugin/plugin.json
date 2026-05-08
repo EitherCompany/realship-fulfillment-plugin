@@ -1,7 +1,7 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.4.1",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.4.1: 마켓플레이스 매니페스트 형식 정정 — plugins array + source 키 + owner + $schema). v0.4.0 메이저 (데이터 드리븐 룰 엔진) 기반.",
+  "version": "0.5.0",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.0 패치 — 합배송 정렬 추가). 풀필먼트 엑셀 생성 시 (받는분, 전화번호1) 그룹화하여 같은 사람이 multi-row 주문한 경우 인접 행으로 정렬 → 풀필먼트 사이트에서 한눈에 합배송 묶음 확인 가능. v0.4.0 데이터 드리븐 룰 엔진 + v0.4.1 마켓플레이스 매니페스트 형식 기반.",
   "author": {
     "name": "이창근 (이더컴퍼니)",
     "email": "ghgh404@gmail.com"

@@ -227,6 +227,18 @@ def run_fixtures(fixture_path, rules, mat, qty_rules, sku, addr_pattern, binbox_
 
 # === 풀필먼트 엑셀 생성 ===
 def to_xlsx(rows, sku, output_path, addr_pattern, fb):
+    """합배송 정렬: (받는분, 전화) 그룹화. 같은 그룹은 인접 행으로 정렬 (등장 순서 보존)."""
+    def npn(p): return str(p or '').strip().replace('-','').replace(' ','')
+    groups, order = {}, []
+    for r in rows:
+        key = ((r.get('수취인명') or '').strip(), npn(r.get('수취인전화번호1')))
+        if key not in groups:
+            groups[key] = []; order.append(key)
+        groups[key].append(r)
+    sorted_rows = []
+    for k in order: sorted_rows.extend(groups[k])
+    rows = sorted_rows
+    
     wb = Workbook(); ws = wb.active
     ws.append(HEADERS)
     for r in rows:
