@@ -226,7 +226,7 @@ def run_fixtures(fixture_path, rules, mat, qty_rules, sku, addr_pattern, binbox_
 
 
 # === 풀필먼트 엑셀 생성 ===
-def to_xlsx(rows, sku, output_path, addr_pattern, fb, tomorrow):
+def to_xlsx(rows, sku, output_path, addr_pattern, fb, ship_date):
     """합배송 정렬: (받는분, 전화) 그룹화. 같은 그룹은 인접 행으로 정렬 (등장 순서 보존)."""
     def npn(p): return str(p or '').strip().replace('-','').replace(' ','')
     groups, order = {}, []
@@ -255,7 +255,7 @@ def to_xlsx(rows, sku, output_path, addr_pattern, fb, tomorrow):
             addr, '',
             (r.get('배송메세지') or '').strip(),
             str(r.get('주문번호(쇼핑몰)') or '').strip(),
-            '','','','','','','','','', tomorrow  # 출고희망일 자동 다음날 (풀필먼트 필수 필드)
+            '','','','','','','','','', ship_date  # 출고희망일 자동 당일 (풀필먼트 필수 필드)
         ])
     wb.save(output_path)
 
@@ -453,8 +453,8 @@ def main():
         print('\n🚨 자동 stop 조건. ABORT.')
         sys.exit(2)
 
-    if args.output_ether: tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).isoformat(); to_xlsx(ether, sku, args.output_ether, addr_pattern, fb, tomorrow)
-    if args.output_nutri: to_xlsx(nutri, sku, args.output_nutri, addr_pattern, fb, tomorrow)
+    if args.output_ether: today = datetime.date.today().isoformat(); to_xlsx(ether, sku, args.output_ether, addr_pattern, fb, today)
+    if args.output_nutri: to_xlsx(nutri, sku, args.output_nutri, addr_pattern, fb, today)
 
     today_key = datetime.date.today().isoformat()
     state['last_cycle_date'] = today_key
