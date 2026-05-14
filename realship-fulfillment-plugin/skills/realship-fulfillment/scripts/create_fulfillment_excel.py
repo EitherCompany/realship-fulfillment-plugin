@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """v0.4.0 데이터 드리븐 룰 엔진 + fixture 회귀 테스트 + 사용자 confirm 게이트."""
-import openpyxl, json, datetime, re, warnings, argparse, sys, os
+import openpyxl, json, datetime, re, warnings, argparse, sys, os, glob
 from collections import Counter, defaultdict
 from openpyxl import Workbook
 
@@ -15,6 +15,49 @@ SR = re.compile(r'(\d{3})\s*-\s*(\d{3})')
 
 
 # === SKU 매트릭스 빌드 (brand 분리) ===
+
+def find_prev_fulfillment(downloads_dir, today_str):
+    """Downloads에서 직전 사이클 풀필먼트 엑셀 자동 탐색 (이더+뉴트리, 오늘 이전 가장 최근).
+    파일명 패턴: 풀필먼트_{이더|뉴트리}_YYYYMMDD*.xlsx
+    우선순위: 파일명 날짜 (가장 최근) > _FINAL > v숫자 (가장 큼) > mtime"""
+    if not downloads_dir or not os.path.isdir(downloads_dir):
+        return []
+    results = []
+    for brand in ['이더', '뉴트리']:
+        pattern = os.path.join(downloads_dir, f'풀필먼트_{brand}_*.xlsx')
+        files = glob.glob(pattern)
+        candidates = []
+        for f in files:
+            name = os.path.basename(f)
+            m = re.search(r'(\d{8})', name)
+            date_str = m.group(1) if m else '00000000'
+            if date_str >= today_str:
+                continue  # 오늘 또는 미래 파일 제외 (자기 자신 매칭 방지)
+            v = 99 if '_FINAL' in name else 0
+            vm = re.search(r'_v(\d+)', name)
+            if vm: v = max(v, int(vm.group(1)))
+            mtime = os.path.getmtime(f)
+            candidates.append((date_str, v, mtime, f))
+        if candidates:
+            candidates.sort(reverse=True)
+            results.append(candidates[0][3])
+    return results
+
+
+def load_prev_fulfillment_rows(paths):
+    """이전 풀필먼트 엑셀들을 row dict 리스트로 로드."""
+    rows = []
+    for p in paths:
+        try:
+            wb = openpyxl.load_workbook(p, data_only=True); ws = wb.active
+            h = [ws.cell(1,c).value for c in range(1, ws.max_column+1)]
+            for r in range(2, ws.max_row+1):
+                rows.append({h[c]: ws.cell(r, c+1).value for c in range(len(h)) if h[c]})
+        except Exception as e:
+            print(f'⚠️ 이전 풀필먼트 엑셀 로드 실패 {p}: {e}')
+    return rows
+
+
 def build_sku_matrix(sku_path):
     wb = openpyxl.load_workbook(sku_path, data_only=True); ws = wb.active
     sku, mat = {}, {}
@@ -321,7 +364,8 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('--orders', required=True)
     p.add_argument('--sku-master')
-    p.add_argument('--fulfillment-history', nargs='*', help='발주조회 엑셀 (cross-validate)')
+    p.add_argument('--fulfillment-history', nargs='*', help='발주조회 엑셀 (cross-validate, 명시 시 우선)')
+    p.add_argument('--prev-fulfillment-dir', help='Downloads 폴더 — 자동으로 직전 사이클 풀필먼트 엑셀 탐색 (--fulfillment-history 미제공 시)')
     p.add_argument('--state', required=True)
     p.add_argument('--cycle-start', required=True)
     p.add_argument('--report-only', action='store_true')
@@ -389,7 +433,9 @@ def main():
         else: after_state.append(r)
 
     fulfill = []
+    cv_source = None
     if args.fulfillment_history:
+        cv_source = '발주조회 엑셀 (사용자 명시)'
         try:
             import msoffcrypto, io
             for path in args.fulfillment_history:
@@ -402,16 +448,25 @@ def main():
                     fulfill.append({fh[c]: fws.cell(rr, c+1).value for c in range(len(fh)) if fh[c]})
         except Exception as e:
             print(f'⚠️ 발주조회 로드 실패: {e}')
+    elif args.prev_fulfillment_dir:
+        today_str = datetime.date.today().strftime('%Y%m%d')
+        prev_files = find_prev_fulfillment(args.prev_fulfillment_dir, today_str)
+        if prev_files:
+            cv_source = f'어제 풀필먼트 엑셀 자동 탐색 ({len(prev_files)}개)'
+            print(f'🔍 자동 cross-validate: {[os.path.basename(p) for p in prev_files]}')
+            fulfill = load_prev_fulfillment_rows(prev_files)
 
     def npn(p): return str(p or '').strip().replace('-','').replace(' ','')
     fA, fB = defaultdict(list), defaultdict(list)
+    # 발주조회: 주문번호/고유코드. 어제 풀필먼트 엑셀: 주문번호/상품고유코드.
     for r in fulfill:
         on = str(r.get('주문번호') or '').strip()
-        cd = str(r.get('고유코드') or '').strip()
+        cd = str(r.get('고유코드') or r.get('상품고유코드') or '').strip()
         nm = str(r.get('받는분 이름') or '').strip()
         ph = npn(r.get('전화번호1'))
         if on and cd: fA[(on, cd)].append(r)
         if nm and ph and cd: fB[(nm, ph, cd)].append(r)
+    if cv_source: print(f'✅ Cross-validate source: {cv_source} ({len(fulfill)} rows)')
 
     dup, final = [], []
     for r in after_state:
