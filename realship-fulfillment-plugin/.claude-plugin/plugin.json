@@ -1,7 +1,7 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.5.3",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.3 패치 — 어제 풀필먼트 엑셀 자동 cross-validate). Downloads 폴더 자동 스캔으로 직전 사이클의 풀필먼트_이더_*.xlsx / 풀필먼트_뉴트리_*.xlsx 가장 최신 파일 탐색 → (쇼핑몰주문번호, 상품고유코드) + (받는분, 전화, 코드) 매칭 → 중복 자동 제거. 사용자가 풀필먼트 발주조회 엑셀 다운로드할 필요 없음. v0.5.x 모든 룰 유지. --fulfillment-history 명시 가능 (혼용).",
+  "version": "0.5.6",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.6 — 전 매트릭스 룰 lookup table 영구화). 재고조회 엑셀 의존 완전 제거 + cross-validate에 코드 변동 감지 추가. 매트릭스 코드 85종(구름깔창·벌집·양말·글램루아·아쿠아슈즈) mapping_rules.json에 박힘. 사용자는 주문서 엑셀 1개만 올리면 끝.",
   "author": {
     "name": "이창근 (이더컴퍼니)",
     "email": "ghgh404@gmail.com"

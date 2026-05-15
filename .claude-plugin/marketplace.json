@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment",
-  "version": "0.5.3",
-  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 반자동화 마켓플레이스 (v0.5.3: 어제 엑셀 자동 대조)",
+  "version": "0.5.6",
+  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 반자동화 마켓플레이스 (v0.5.6: 전 매트릭스 lookup화)",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -12,8 +12,8 @@
     {
       "name": "realship-fulfillment-plugin",
       "source": "./realship-fulfillment-plugin",
-      "version": "0.5.3",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.3: --prev-fulfillment-dir 옵션으로 Downloads에서 직전 사이클 풀필먼트 엑셀 자동 탐색·대조. 발주조회 다운로드 불필요).",
+      "version": "0.5.6",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.6: 매트릭스 룰 85종 lookup table 영구화 + cross-validate 코드 변동 감지. 재고조회 엑셀 의존 0).",
       "author": {
         "name": "이창근 (이더컴퍼니)"
       },

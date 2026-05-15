@@ -93,7 +93,8 @@ def build_sku_matrix(sku_path):
             sm = SR.search(name)
             if sm:
                 size = f'{sm.group(1)}-{sm.group(2)}'
-                for c in ['블랙','블루','퍼플','피치','네이비','그레이']:
+                # 2026-05-15: 출고상품 엑셀 기준 색 4종만. 네이비/그레이 없음.
+                for c in ['블랙','블루','퍼플','피치']:
                     if c in name:
                         mat[('아쿠아슈즈', None, c, size)] = code; break
     return sku, mat
@@ -120,36 +121,65 @@ def evaluate_rule(rule, text, opt):
 
 
 def resolve_matrix(rule, text, opt, mat):
-    """matrix lookup으로 코드 결정."""
+    """matrix lookup으로 코드 결정. rule['matrix']['lookup'] 우선, 없으면 SKU master 매트릭스(mat) 폴백."""
     cat = rule['matrix']['category']
     brand = rule['matrix'].get('brand')
     extract = rule['matrix']['extract']
-    
+    lookup = rule['matrix'].get('lookup')  # 2026-05-15: 룰 내장 lookup table 우선
+
+    # 글램루아: 색 토큰 set + 사이즈 매칭 (특수 로직)
+    if cat == '글램루아':
+        sm = re.search(r'사이즈[: ]*([SMLXL]+)', opt or '') or re.search(r'\b(L|M|S|XL)\b', opt or '')
+        size = sm.group(1) if sm else None
+        opt2 = (opt or '').replace(' ','')
+        opt_tok = set(re.findall(r'(블랙|스킨|그레이|화이트)', opt2))
+        if size:
+            # 1) lookup 우선 — 옵션 색조합 + size 키 매칭
+            if lookup:
+                for lkey, lcode in lookup.items():
+                    parts = lkey.split('|')
+                    if len(parts) < 2 or parts[-1] != size: continue
+                    color_part = '|'.join(parts[:-1])
+                    code_tok = set(re.findall(r'(블랙|스킨|그레이|화이트)', color_part))
+                    if opt_tok == code_tok: return lcode
+            # 2) mat fallback
+            for k, v in mat.items():
+                if k[0]!='글램루아' or k[3]!=size: continue
+                code_tok = set(re.findall(r'(블랙|스킨|그레이|화이트)', k[2]))
+                if opt_tok == code_tok: return v
+        return None
+
+    # 색 추출
     color = None
-    if 'color' in extract or 'color_combo' in extract:
-        if cat in ['구름깔창','아쿠아슈즈']:
-            color = text_color(text) or _find_in(text, ['블루','퍼플','피치','네이비'])
+    if 'color' in extract:
+        if cat == '구름깔창':
+            color = text_color(text)
+        elif cat == '아쿠아슈즈':
+            color = text_color(text) or _find_in(text, ['블루','퍼플','피치'])
         elif cat == '양말':
             color = _find_in(text, ['화이트','블랙','그레이'])
-        elif cat == '글램루아':
-            sm = re.search(r'사이즈[: ]*([SMLXL]+)', opt or '') or re.search(r'\b(L|M|S|XL)\b', opt or '')
-            size = sm.group(1) if sm else None
-            opt2 = (opt or '').replace(' ','')
-            opt_tok = set(re.findall(r'(블랙|스킨|그레이|화이트)', opt2))
-            if size:
-                for k, v in mat.items():
-                    if k[0]!='글램루아' or k[3]!=size: continue
-                    code_tok = set(re.findall(r'(블랙|스킨|그레이|화이트)', k[2]))
-                    if opt_tok == code_tok: return v
-            return None
-    
+
+    # 사이즈 추출
     size = None
     if 'size' in extract:
         m = SR.search(text)
         if m: size = f'{m.group(1)}-{m.group(2)}'
-    
+
+    # 룰 내장 lookup 우선 — 카테고리별 키 형식
+    if lookup:
+        lkey = None
+        if cat in ('구름깔창','아쿠아슈즈') and color and size:
+            lkey = f'{color}|{size}'
+        elif cat == '벌집깔창' and size:
+            lkey = size
+        elif cat == '양말' and color:
+            lkey = color
+        if lkey and lkey in lookup: return lookup[lkey]
+
+    # 폴백: SKU master에서 빌드된 매트릭스
     key = (cat, brand, color, size)
     return mat.get(key)
+
 
 
 def _find_in(text, candidates):
@@ -234,6 +264,13 @@ def norm(value, fallback):
     return s if s and s != 'None' else fallback
 
 
+def norm_zip(value, fallback):
+    """우편번호: 하이픈/공백 제거 + 5자리 zfill (앞자리 0 보존). 풀필먼트는 5자리 신우편번호."""
+    s = str(value or '').strip().replace('-', '').replace(' ', '')
+    if not s or s == 'None': return fallback
+    return s.zfill(5) if len(s) <= 5 else s
+
+
 # === Fixture 회귀 테스트 ===
 def run_fixtures(fixture_path, rules, mat, qty_rules, sku, addr_pattern, binbox_rules):
     if not os.path.exists(fixture_path):
@@ -294,12 +331,14 @@ def to_xlsx(rows, sku, output_path, addr_pattern, fb, ship_date):
             '택배', '',
             (r.get('수취인명') or '').strip(),
             norm(r.get('수취인전화번호1'), fb['phone']), '',
-            norm(r.get('수취인우편번호(1)'), fb['zip']),
+            norm_zip(r.get('수취인우편번호(1)'), fb['zip']),
             addr, '',
             (r.get('배송메세지') or '').strip(),
             str(r.get('주문번호(쇼핑몰)') or '').strip(),
-            '','','','','','','','','', ship_date  # 출고희망일 자동 당일 (풀필먼트 필수 필드)
+            '','','','','','','','','', ''  # 출고희망일: 빈칸 (사용자 결정 2026-05-15 — 풀필먼트가 임의 처리)
         ])
+        # 우편번호 셀(col 9)을 text format으로 강제 → leading 0 보존
+        ws.cell(row=ws.max_row, column=9).number_format = '@'
     wb.save(output_path)
 
 
@@ -436,18 +475,27 @@ def main():
     cv_source = None
     if args.fulfillment_history:
         cv_source = '발주조회 엑셀 (사용자 명시)'
-        try:
-            import msoffcrypto, io
-            for path in args.fulfillment_history:
-                with open(path, 'rb') as f:
+        for fpath in args.fulfillment_history:
+            fws = None
+            # 1) msoffcrypto 복호화 시도 (암호화된 경우)
+            try:
+                import msoffcrypto, io
+                with open(fpath, 'rb') as f:
                     of = msoffcrypto.OfficeFile(f); of.load_key(password='dlejrhddyd1!')
                     buf = io.BytesIO(); of.decrypt(buf); buf.seek(0)
                 fws = openpyxl.load_workbook(buf, data_only=True).active
-                fh = [fws.cell(1, c).value for c in range(1, fws.max_column+1)]
-                for rr in range(2, fws.max_row+1):
-                    fulfill.append({fh[c]: fws.cell(rr, c+1).value for c in range(len(fh)) if fh[c]})
-        except Exception as e:
-            print(f'⚠️ 발주조회 로드 실패: {e}')
+            except Exception as e:
+                # 2) 폴백: 이미 풀려있는 파일이면 직접 열기
+                try:
+                    fws = openpyxl.load_workbook(fpath, data_only=True).active
+                    print(f'ℹ️ 발주조회 폴백 로드 (암호화 X): {os.path.basename(fpath)}')
+                except Exception as e2:
+                    print(f'⚠️ 발주조회 로드 실패: {e} / 폴백 실패: {e2}')
+                    continue
+            if fws is None: continue
+            fh = [fws.cell(1, c).value for c in range(1, fws.max_column+1)]
+            for rr in range(2, fws.max_row+1):
+                fulfill.append({fh[c]: fws.cell(rr, c+1).value for c in range(len(fh)) if fh[c]})
     elif args.prev_fulfillment_dir:
         today_str = datetime.date.today().strftime('%Y%m%d')
         prev_files = find_prev_fulfillment(args.prev_fulfillment_dir, today_str)
@@ -458,22 +506,35 @@ def main():
 
     def npn(p): return str(p or '').strip().replace('-','').replace(' ','')
     fA, fB = defaultdict(list), defaultdict(list)
+    fOrderCodes = defaultdict(set)  # 2026-05-15: 주문번호 → {이전 사이클의 코드 set} (코드 변동 감지용)
     # 발주조회: 주문번호/고유코드. 어제 풀필먼트 엑셀: 주문번호/상품고유코드.
     for r in fulfill:
         on = str(r.get('주문번호') or '').strip()
         cd = str(r.get('고유코드') or r.get('상품고유코드') or '').strip()
         nm = str(r.get('받는분 이름') or '').strip()
         ph = npn(r.get('전화번호1'))
-        if on and cd: fA[(on, cd)].append(r)
+        if on and cd: fA[(on, cd)].append(r); fOrderCodes[on].add(cd)
         if nm and ph and cd: fB[(nm, ph, cd)].append(r)
     if cv_source: print(f'✅ Cross-validate source: {cv_source} ({len(fulfill)} rows)')
 
-    dup, final = [], []
+    dup, final, code_mismatch = [], [], []
     for r in after_state:
-        kA = (str(r.get('주문번호(쇼핑몰)','')).strip(), r['_code'])
-        kB = ((r.get('수취인명') or '').strip(), npn(r.get('수취인전화번호1')), r['_code'])
-        if (fA and kA in fA) or (fB and kB in fB): dup.append(r)
-        else: final.append(r)
+        on = str(r.get('주문번호(쇼핑몰)','')).strip()
+        cd = r['_code']
+        kA = (on, cd)
+        kB = ((r.get('수취인명') or '').strip(), npn(r.get('수취인전화번호1')), cd)
+        if (fA and kA in fA) or (fB and kB in fB):
+            dup.append(r)
+        else:
+            # 코드 변동 감지: 같은 주문번호인데 이전 사이클의 코드 set에 현재 코드가 없음
+            if on and on in fOrderCodes and cd not in fOrderCodes[on]:
+                code_mismatch.append({
+                    '주문번호': on,
+                    '현재코드': cd,
+                    '이전코드': sorted(fOrderCodes[on]),
+                    '상품명': str(r.get('상품명(수집)') or r.get('상품명(확정)') or '')[:50],
+                })
+            final.append(r)
 
     ether = [r for r in final if r['_code'].startswith('E')]
     nutri = [r for r in final if r['_code'].startswith('N')]
@@ -482,6 +543,8 @@ def main():
                'mapped':mapped, 'unmapped':unmapped, 'state_skip':state_skip, 'final':final,
                'ether':ether, 'nutri':nutri}
     report = build_report(buckets, sku, rules_cfg, dup, conflicts)
+    report['code_mismatch'] = code_mismatch  # 2026-05-15: 코드 변동 감지 (정보용, stop X)
+    report['code_mismatch_count'] = len(code_mismatch)
 
     if args.output_report:
         with open(args.output_report, 'w', encoding='utf-8') as f:
@@ -491,7 +554,10 @@ def main():
     t = report['totals']
     print(f'  전체 {len(rows)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
     print(f'  매핑 {t["mapped"]} / 미매핑 {t["unmapped"]}')
-    print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]}')
+    print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]} / 코드 변동 {report.get("code_mismatch_count",0)}')
+    if code_mismatch:
+        print(f'  ⚠️ 코드 변동 감지 (이전 사이클과 다른 코드로 매핑됨):')
+        for m in code_mismatch[:5]: print(f'    주문 {m["주문번호"]}: {m["이전코드"]} → {m["현재코드"]} ({m["상품명"]})')
     print(f'  최종 {t["final"]} (이더 {t["ether"]} / 뉴트리 {t["nutri"]})')
     print(f'  루미솔 {report["lumisol_count"]} | 우편 fallback {report["zip_fallback_pct"]}%')
     print(f'  코드 TOP 5: {report["top_codes"][:5]}')
@@ -508,8 +574,8 @@ def main():
         print('\n🚨 자동 stop 조건. ABORT.')
         sys.exit(2)
 
-    if args.output_ether: today = datetime.date.today().isoformat(); to_xlsx(ether, sku, args.output_ether, addr_pattern, fb, today)
-    if args.output_nutri: to_xlsx(nutri, sku, args.output_nutri, addr_pattern, fb, today)
+    if args.output_ether: to_xlsx(ether, sku, args.output_ether, addr_pattern, fb, '')
+    if args.output_nutri: to_xlsx(nutri, sku, args.output_nutri, addr_pattern, fb, '')
 
     today_key = datetime.date.today().isoformat()
     state['last_cycle_date'] = today_key
