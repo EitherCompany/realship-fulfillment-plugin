@@ -424,6 +424,9 @@ def main():
     fb = rules_cfg['user_fallback']
 
     sku, mat = build_sku_matrix(args.sku_master) if args.sku_master else ({}, {})
+    # 2026-05-18: sku_master 미제공 또는 코드 미존재 시 mapping_rules.json의 sku_names 폴백
+    for code, name in rules_cfg.get('sku_names', {}).items():
+        if code not in sku: sku[code] = name
 
     if mat:
         ok = run_fixtures(os.path.join(here, 'fixture_tests.json'), rules, mat, qty_rules, sku, addr_pattern, binbox_rules)
