@@ -406,7 +406,7 @@ def main():
     p.add_argument('--fulfillment-history', nargs='*', help='발주조회 엑셀 (cross-validate, 명시 시 우선)')
     p.add_argument('--prev-fulfillment-dir', help='Downloads 폴더 — 자동으로 직전 사이클 풀필먼트 엑셀 탐색 (--fulfillment-history 미제공 시)')
     p.add_argument('--state', required=True)
-    p.add_argument('--cycle-start', required=True)
+    p.add_argument('--cycle-start', default=None, help='YYYY-MM-DD HH:MM. 미제공 시 1년 전 자동 (송장 SKIP가 주 필터)')
     p.add_argument('--report-only', action='store_true')
     p.add_argument('--output-ether')
     p.add_argument('--output-nutri')
@@ -437,7 +437,11 @@ def main():
     rows = [{h[c]: ws.cell(r, c+1).value for c in range(len(h)) if h[c]}
             for r in range(2, ws.max_row+1)]
 
-    cycle_start = datetime.datetime.strptime(args.cycle_start, '%Y-%m-%d %H:%M')
+    if args.cycle_start:
+        cycle_start = datetime.datetime.strptime(args.cycle_start, '%Y-%m-%d %H:%M')
+    else:
+        cycle_start = datetime.datetime.now() - datetime.timedelta(days=365)
+        print(f'ℹ️ cycle-start 미제공 → 1년 전 자동 ({cycle_start.strftime("%Y-%m-%d %H:%M")})')
 
     try:
         with open(args.state, encoding='utf-8') as f: state = json.load(f)
@@ -450,8 +454,12 @@ def main():
                     if isinstance(p_, list) and len(p_)==2:
                         prev_pairs.add(tuple(p_))
 
-    pre_cycle, binbox, realship = [], [], []
+    pre_cycle, binbox, realship, shipped_skip = [], [], [], []
     for r in rows:
+        # v0.5.8: 송장번호 있는 행 자동 SKIP (이미 발송 처리됨, 풀필먼트 재등록 방지)
+        wb_no = str(r.get('송장번호') or '').strip()
+        if wb_no and wb_no.lower() != 'none':
+            shipped_skip.append(r); continue
         if is_pre_cycle(r, cycle_start): pre_cycle.append(r); continue
         c = classify_binbox(r, binbox_rules)
         (binbox if c == 'binbox' else realship).append(r)
@@ -542,7 +550,7 @@ def main():
     ether = [r for r in final if r['_code'].startswith('E')]
     nutri = [r for r in final if r['_code'].startswith('N')]
 
-    buckets = {'rows':rows, 'pre_cycle_skip':pre_cycle, 'binbox':binbox, 'realship':realship,
+    buckets = {'rows':rows, 'shipped_skip':shipped_skip, 'pre_cycle_skip':pre_cycle, 'binbox':binbox, 'realship':realship,
                'mapped':mapped, 'unmapped':unmapped, 'state_skip':state_skip, 'final':final,
                'ether':ether, 'nutri':nutri}
     report = build_report(buckets, sku, rules_cfg, dup, conflicts)
@@ -555,7 +563,7 @@ def main():
 
     print(f'\n[검증 보고서]')
     t = report['totals']
-    print(f'  전체 {len(rows)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
+    print(f'  전체 {len(rows)} | 송장이미등록 {len(shipped_skip)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
     print(f'  매핑 {t["mapped"]} / 미매핑 {t["unmapped"]}')
     print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]} / 코드 변동 {report.get("code_mismatch_count",0)}')
     if code_mismatch:
@@ -587,6 +595,7 @@ def main():
         'nutri_code_pairs': [[str(r.get('주문번호(쇼핑몰)','')), r['_code']] for r in nutri],
         'shma_code_pairs': [[str(r.get('주문번호(쇼핑몰)','')), r['_code']] for r in final],
         'binbox_skip_count': len(binbox),
+        'shipped_skip_count': len(shipped_skip),
         'pre_cycle_skip_count': len(pre_cycle),
         'unmapped_count': len(unmapped),
         'crossvalidate_dup_count': len(dup),

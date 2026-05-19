@@ -1,7 +1,7 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.5.7",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.7 — sku_names 108종 영구 박음). 재고조회 엑셀 받지 않아도 풀필먼트 엑셀의 판매상품명 col이 정상 상품명으로 채워짐. mapping_rules.json 단일 파일이 모든 룰 + 코드 매핑 + 상품명 영구 저장소.",
+  "version": "0.5.8",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.8 — 송장번호 자동 SKIP). 이미 송장 등록된 행은 자동 제외하여 풀필먼트 재등록 방지. cycle-start 인자 optional. 사용자가 양식 신경 안 써도 누락/중복 없이 처리.",
   "author": {
     "name": "이창근 (이더컴퍼니)",
     "email": "ghgh404@gmail.com"
