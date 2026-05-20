@@ -528,13 +528,16 @@ def main():
         if nm and ph and cd: fB[(nm, ph, cd)].append(r)
     if cv_source: print(f'✅ Cross-validate source: {cv_source} ({len(fulfill)} rows)')
 
-    dup, final, code_mismatch = [], [], []
+    # v0.5.9: fA(주문번호+코드)만 dup 판정. fB(수취인+전화+코드)는 정보용 카운터로만.
+    # 이유: 동일 고객이 며칠 후 같은 상품 재주문 = 정상 케이스인데 기존엔 false dup으로 누락됐음.
+    dup, final, code_mismatch, same_customer_resend = [], [], [], []
     for r in after_state:
         on = str(r.get('주문번호(쇼핑몰)','')).strip()
         cd = r['_code']
         kA = (on, cd)
         kB = ((r.get('수취인명') or '').strip(), npn(r.get('수취인전화번호1')), cd)
-        if (fA and kA in fA) or (fB and kB in fB):
+        if fA and kA in fA:
+            # 정확 중복: 같은 주문번호 + 같은 코드 → 풀필먼트 제외
             dup.append(r)
         else:
             # 코드 변동 감지: 같은 주문번호인데 이전 사이클의 코드 set에 현재 코드가 없음
@@ -543,6 +546,17 @@ def main():
                     '주문번호': on,
                     '현재코드': cd,
                     '이전코드': sorted(fOrderCodes[on]),
+                    '상품명': str(r.get('상품명(수집)') or r.get('상품명(확정)') or '')[:50],
+                })
+            # fB 정보용 알림: 동일 수취인+코드 재발견 (재주문 가능성, 풀필먼트엔 정상 등록)
+            if fB and kB in fB:
+                prev_orders = [x.get('주문번호') for x in fB[kB] if x.get('주문번호')]
+                same_customer_resend.append({
+                    '주문번호': on,
+                    '수취인명': (r.get('수취인명') or '').strip(),
+                    '전화': npn(r.get('수취인전화번호1')),
+                    '코드': cd,
+                    '이전_주문번호': list(set(prev_orders))[:3],
                     '상품명': str(r.get('상품명(수집)') or r.get('상품명(확정)') or '')[:50],
                 })
             final.append(r)
@@ -556,6 +570,8 @@ def main():
     report = build_report(buckets, sku, rules_cfg, dup, conflicts)
     report['code_mismatch'] = code_mismatch  # 2026-05-15: 코드 변동 감지 (정보용, stop X)
     report['code_mismatch_count'] = len(code_mismatch)
+    report['same_customer_resend'] = same_customer_resend  # v0.5.9: 동일 수취인+코드 재주문 (정보용)
+    report['same_customer_resend_count'] = len(same_customer_resend)
 
     if args.output_report:
         with open(args.output_report, 'w', encoding='utf-8') as f:
@@ -565,10 +581,13 @@ def main():
     t = report['totals']
     print(f'  전체 {len(rows)} | 송장이미등록 {len(shipped_skip)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
     print(f'  매핑 {t["mapped"]} / 미매핑 {t["unmapped"]}')
-    print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]} / 코드 변동 {report.get("code_mismatch_count",0)}')
+    print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]} / 코드 변동 {report.get("code_mismatch_count",0)} / 재주문(정보) {report.get("same_customer_resend_count",0)}')
     if code_mismatch:
         print(f'  ⚠️ 코드 변동 감지 (이전 사이클과 다른 코드로 매핑됨):')
         for m in code_mismatch[:5]: print(f'    주문 {m["주문번호"]}: {m["이전코드"]} → {m["현재코드"]} ({m["상품명"]})')
+    if same_customer_resend:
+        print(f'  ℹ️ 동일 수취인+코드 재발견 (재주문 — 풀필먼트엔 정상 등록):')
+        for m in same_customer_resend[:5]: print(f'    {m["수취인명"]} {m["전화"]} {m["코드"]} | 이전 {m["이전_주문번호"]} → 신규 {m["주문번호"]} ({m["상품명"]})')
     print(f'  최종 {t["final"]} (이더 {t["ether"]} / 뉴트리 {t["nutri"]})')
     print(f'  루미솔 {report["lumisol_count"]} | 우편 fallback {report["zip_fallback_pct"]}%')
     print(f'  코드 TOP 5: {report["top_codes"][:5]}')

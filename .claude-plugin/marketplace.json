@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment",
-  "version": "0.5.8",
-  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 반자동화 마켓플레이스 (v0.5.8: 송장 자동 SKIP)",
+  "version": "0.5.9",
+  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 마켓플레이스 (v0.5.9: 재주문 누락 fix)",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -12,8 +12,8 @@
     {
       "name": "realship-fulfillment-plugin",
       "source": "./realship-fulfillment-plugin",
-      "version": "0.5.8",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.8: 송장번호 자동 SKIP 영구 룰. 송장 있는 행은 자동 제외, cycle-start optional. 매 사이클 수동 양식 정리 불필요).",
+      "version": "0.5.9",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.9: 동일 고객 재주문 누락 fix. fB 룰을 dup 판정에서 빼고 정보용 카운터로만 표시. fA(주문번호+코드)는 유지. 매핑·합배송·우편번호·출고희망일·송장SKIP 모두 무변경).",
       "author": {
         "name": "이창근 (이더컴퍼니)"
       },
