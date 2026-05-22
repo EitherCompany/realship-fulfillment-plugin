@@ -240,6 +240,8 @@ def is_pre_cycle(r, cycle_start):
 def matches_exclude(r, exclude_rules):
     text = f"{r.get('상품명(수집)') or ''} {r.get('옵션(수집)') or ''}"
     for rule in exclude_rules or []:
+        if 'none' in rule and any(kw in text for kw in rule['none']):
+            continue
         if 'all' in rule and all(kw in text for kw in rule['all']):
             return rule.get('id', 'exclude')
         if 'any' in rule and any(kw in text for kw in rule['any']):
@@ -345,10 +347,14 @@ def to_xlsx(rows, sku, output_path, addr_pattern, fb, ship_date):
             addr, '',
             (r.get('배송메세지') or '').strip(),
             str(r.get('주문번호(쇼핑몰)') or '').strip(),
-            '','','','','','','','','', ''  # 출고희망일: 빈칸 (사용자 결정 2026-05-15 — 풀필먼트가 임의 처리)
+            '','','','','','','','','', None  # 출고희망일: 완전 빈 셀 (v0.5.11 — 빈 문자열도 값 취급되는 문제 fix)
         ])
         # 우편번호 셀(col 9)을 text format으로 강제 → leading 0 보존
         ws.cell(row=ws.max_row, column=9).number_format = '@'
+        # v0.5.11: 출고희망일(col 23) 셀 명시적 비우기 — 빈 문자열/투명 글씨 흔적 제거
+        c23 = ws.cell(row=ws.max_row, column=23)
+        c23.value = None
+        c23.number_format = 'General'
     wb.save(output_path)
 
 
@@ -470,12 +476,16 @@ def main():
         wb_no = str(r.get('송장번호') or '').strip()
         if wb_no and wb_no.lower() != 'none':
             shipped_skip.append(r); continue
+        if is_pre_cycle(r, cycle_start): pre_cycle.append(r); continue
+        # v0.5.11: 빈박스(% 마스킹) 먼저 → 송장처리 스킬 별도 처리
+        c = classify_binbox(r, binbox_rules)
+        if c == 'binbox':
+            binbox.append(r); continue
+        # v0.5.10~11: 실배송 제외 룰 (빈박스 아닌 것 중 가드웰발목/슬루나 등 — unmapped 미포함)
         ex = matches_exclude(r, exclude_rules)
         if ex:
             r['_exclude_id'] = ex; excluded.append(r); continue
-        if is_pre_cycle(r, cycle_start): pre_cycle.append(r); continue
-        c = classify_binbox(r, binbox_rules)
-        (binbox if c == 'binbox' else realship).append(r)
+        realship.append(r)
 
     mapped, unmapped = [], []
     conflicts = []
