@@ -1,7 +1,7 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.5.9",
-  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.9 — 동일 고객 재주문 누락 차단 해제). cross-validate fB(수취인+전화+코드) 매칭을 dup 판정에서 빼고 정보용 카운터로만 표시. 며칠 후 동일 상품 재주문하는 정상 케이스가 더 이상 누락되지 않음. 다른 모든 룰(매핑 lookup 108종, 합배송 정렬, norm_zip, 출고희망일 빈칸, 송장 자동 SKIP) 100% 무변경.",
+  "version": "0.5.10",
+  "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.10 — 실배송 제외 룰). mapping_rules.json의 exclude_rules로 특정 상품을 실배송 대상에서 완전 제외 (담당자 사방넷 별도 처리). 송장 자동 SKIP + 재주문 누락 fix + 매핑 lookup 108종 모두 유지.",
   "author": {
     "name": "이창근 (이더컴퍼니)",
     "email": "ghgh404@gmail.com"

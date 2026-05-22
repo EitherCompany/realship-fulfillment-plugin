@@ -237,6 +237,16 @@ def is_pre_cycle(r, cycle_start):
     return False
 
 
+def matches_exclude(r, exclude_rules):
+    text = f"{r.get('상품명(수집)') or ''} {r.get('옵션(수집)') or ''}"
+    for rule in exclude_rules or []:
+        if 'all' in rule and all(kw in text for kw in rule['all']):
+            return rule.get('id', 'exclude')
+        if 'any' in rule and any(kw in text for kw in rule['any']):
+            return rule.get('id', 'exclude')
+    return None
+
+
 def classify_binbox(r, binbox_rules):
     mall = r.get('쇼핑몰명(1)') or ''
     for rule in binbox_rules:
@@ -454,12 +464,15 @@ def main():
                     if isinstance(p_, list) and len(p_)==2:
                         prev_pairs.add(tuple(p_))
 
-    pre_cycle, binbox, realship, shipped_skip = [], [], [], []
+    exclude_rules = rules_cfg.get('exclude_rules', [])
+    pre_cycle, binbox, realship, shipped_skip, excluded = [], [], [], [], []
     for r in rows:
-        # v0.5.8: 송장번호 있는 행 자동 SKIP (이미 발송 처리됨, 풀필먼트 재등록 방지)
         wb_no = str(r.get('송장번호') or '').strip()
         if wb_no and wb_no.lower() != 'none':
             shipped_skip.append(r); continue
+        ex = matches_exclude(r, exclude_rules)
+        if ex:
+            r['_exclude_id'] = ex; excluded.append(r); continue
         if is_pre_cycle(r, cycle_start): pre_cycle.append(r); continue
         c = classify_binbox(r, binbox_rules)
         (binbox if c == 'binbox' else realship).append(r)
@@ -564,7 +577,7 @@ def main():
     ether = [r for r in final if r['_code'].startswith('E')]
     nutri = [r for r in final if r['_code'].startswith('N')]
 
-    buckets = {'rows':rows, 'shipped_skip':shipped_skip, 'pre_cycle_skip':pre_cycle, 'binbox':binbox, 'realship':realship,
+    buckets = {'rows':rows, 'shipped_skip':shipped_skip, 'excluded':excluded, 'pre_cycle_skip':pre_cycle, 'binbox':binbox, 'realship':realship,
                'mapped':mapped, 'unmapped':unmapped, 'state_skip':state_skip, 'final':final,
                'ether':ether, 'nutri':nutri}
     report = build_report(buckets, sku, rules_cfg, dup, conflicts)
@@ -579,7 +592,10 @@ def main():
 
     print(f'\n[검증 보고서]')
     t = report['totals']
-    print(f'  전체 {len(rows)} | 송장이미등록 {len(shipped_skip)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
+    print(f'  전체 {len(rows)} | 송장이미등록 {len(shipped_skip)} | 실배송제외 {len(excluded)} | 사이클이전 {t["pre_cycle_skip"]} | 빈박스 {t["binbox"]} | 실배송 {t["realship"]}')
+    if excluded:
+        from collections import Counter as _C
+        print(f'  ⊘ 실배송 제외 룰 적용: {dict(_C(r.get("_exclude_id","exclude") for r in excluded))}')
     print(f'  매핑 {t["mapped"]} / 미매핑 {t["unmapped"]}')
     print(f'  state SKIP {t["state_skip"]} / cross-validate 중복 {report["crossvalidate_dup_count"]} / 코드 변동 {report.get("code_mismatch_count",0)} / 재주문(정보) {report.get("same_customer_resend_count",0)}')
     if code_mismatch:
