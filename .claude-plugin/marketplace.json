@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "realship-fulfillment",
-  "version": "0.5.11",
-  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 마켓플레이스 (v0.5.11)",
+  "version": "0.5.12",
+  "description": "이더컴퍼니 사방넷 → 풀필먼트 실배송 마켓플레이스 (v0.5.12)",
   "owner": {
     "name": "EitherCompany",
     "email": "ghgh404@gmail.com",
@@ -12,8 +12,8 @@
     {
       "name": "realship-fulfillment-plugin",
       "source": "./realship-fulfillment-plugin",
-      "version": "0.5.11",
-      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.11: 슬루나 실배송 제외(호텔베개 예외) + 평가순서 개선(빈박스 먼저) + 출고희망일 완전 빈 셀). exclude_rules none 조건 지원.",
+      "version": "0.5.12",
+      "description": "사방넷 → 풀필먼트 실배송 반자동화 (v0.5.12: 가드웰 무릎보호대도 실배송 제외 추가). exclude_rules: 가드웰 발목·무릎, 슬루나(호텔베개 예외).",
       "author": {
         "name": "이창근 (이더컴퍼니)"
       },
