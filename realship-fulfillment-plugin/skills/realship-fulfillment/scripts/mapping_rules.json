@@ -1,6 +1,6 @@
 {
-  "version": "0.5.13",
-  "updated_at": "2026-06-02",
+  "version": "0.5.14",
+  "updated_at": "2026-06-05",
   "_도움말": "모든 매핑 룰 + 수량 룰 + 빈박스 룰 + 주소 포맷팅 룰 + 사용자 fallback. Python 코드 수정 없이 이 파일만 편집. 우선순위 낮을수록 먼저 평가.",
   "mapping_rules": [
     {
@@ -258,7 +258,9 @@
         "그레이",
         "30개"
       ],
-      "code": "E00400341"
+      "code": "E00400341",
+      "qty_guard_exempt": true,
+      "_도움말": "30개=팩단위라 수량가드 면제(2026-06-05)."
     },
     {
       "id": "뉴트리_상어연골",
@@ -458,9 +460,9 @@
     },
     {
       "id": "n_count_capsule",
-      "regex": "(\\d+)\\s*개\\s*\\d*\\s*캡슐",
+      "regex": "(\\d+)\\s*개\\s*\\d+\\s*(?:정|캡슐)",
       "multiplier": "first_group",
-      "note": "옵션 'N개 NNN캡슐'→×N. 2026-06-01 추가."
+      "note": "옵션 'N개 NNN정/캡슐'→×N. 2026-06-05 쏘팔메토 'N개 180정' 수량누락 사고로 정/캡슐 통합."
     }
   ],
   "binbox_rules": [
@@ -505,7 +507,8 @@
     ],
     "zip_fallback_pct": 5,
     "crossvalidate_dup_count": 0,
-    "lumisol_count_warning": 1
+    "lumisol_count_warning": 1,
+    "qty_mismatch_count": 0
   },
   "sku_names": {
     "E00400002": "바디인솔 1+1 기능성 구름  쿠션 깔창,색상: 블랙 / 사이즈: 225-230",
