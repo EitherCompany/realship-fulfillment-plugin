@@ -1,6 +1,6 @@
 {
-  "version": "0.5.14",
-  "updated_at": "2026-06-05",
+  "version": "0.5.15",
+  "updated_at": "2026-06-09",
   "_도움말": "모든 매핑 룰 + 수량 룰 + 빈박스 룰 + 주소 포맷팅 룰 + 사용자 fallback. Python 코드 수정 없이 이 파일만 편집. 우선순위 낮을수록 먼저 평가.",
   "mapping_rules": [
     {
@@ -463,6 +463,12 @@
       "regex": "(\\d+)\\s*개\\s*\\d+\\s*(?:정|캡슐)",
       "multiplier": "first_group",
       "note": "옵션 'N개 NNN정/캡슐'→×N. 2026-06-05 쏘팔메토 'N개 180정' 수량누락 사고로 정/캡슐 통합."
+    },
+    {
+      "id": "n_count_box",
+      "regex": "(\\d+)\\s*박스",
+      "multiplier": "first_group",
+      "note": "옵션 'NNNg N박스'→×N. 2026-06-09 콜린 '300g 2박스' 수량누락 사고로 추가. (g는 박스 앞 단위라 미매칭)"
     }
   ],
   "binbox_rules": [

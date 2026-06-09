@@ -387,19 +387,27 @@ def build_report(buckets, sku, rules_cfg, dup, conflicts):
     if conflicts:
         stops.append(f'룰 충돌 {len(conflicts)}건')
     
-    # v0.5.14: 수량룰 미적용 가드 — 옵션에 N개(N>=2)인데 풀필 수량 배수가 N 미만이면 stop
+    # v0.5.15: 수량룰 미적용 가드 — 옵션의 묶음수(개/박스/팩/병 또는 N+N) >= 2인데 풀필 배수가 그보다 작으면 stop
+    # 새 단위가 나와도 조용히 1로 안 빠지고 무조건 걸리도록 광범위 탐지 (개입=팩단위 표기는 제외)
     exempt_ids = {mr['id'] for mr in rules_cfg.get('mapping_rules', []) if mr.get('qty_guard_exempt')}
     qty_suspects = []
     for r in final:
         opt = str(r.get('옵션(수집)') or '')
-        mm = re.search(r'(\d+)\s*개(?!입)', opt)
-        if not mm: continue
-        n = int(mm.group(1))
+        intended = 1
+        for mm in re.finditer(r'(\d+)\s*(개입|개|박스|팩|병)', opt):
+            if mm.group(2) == '개입':
+                continue
+            intended = max(intended, int(mm.group(1)))
+        mset = re.search(r'(\d+)\s*\+\s*(\d+)', opt)
+        if mset and mset.group(1) == mset.group(2):
+            intended = max(intended, int(mset.group(1)))
+        if intended < 2:
+            continue
         per = float(r['_qty']) / float(r.get('수량') or 1)
-        if n >= 2 and per < n and r.get('_match_id') not in exempt_ids:
-            qty_suspects.append({'rule': r.get('_match_id'), 'option': opt, 'qty': float(r['_qty'])})
+        if per < intended and r.get('_match_id') not in exempt_ids:
+            qty_suspects.append({'rule': r.get('_match_id'), 'option': opt, 'qty': float(r['_qty']), 'intended': intended})
     if len(qty_suspects) > cfg.get('qty_mismatch_count', 0):
-        stops.append(f'수량룰 미적용 의심 {len(qty_suspects)}건 (옵션 N개>=2인데 수량 미반영)')
+        stops.append(f'수량룰 미적용 의심 {len(qty_suspects)}건 (옵션 묶음수>=2인데 수량 미반영)')
 
     qty_NN, qty_N = defaultdict(int), defaultdict(int)
     for r in final:

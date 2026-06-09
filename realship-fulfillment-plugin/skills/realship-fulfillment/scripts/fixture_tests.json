@@ -1,5 +1,5 @@
 {
-  "version": "0.5.14",
+  "version": "0.5.15",
   "_도움말": "매 사이클 시작 시 자동 통과 의무. 실패 시 ABORT.",
   "tests": [
     {
@@ -211,6 +211,27 @@
       "option": "2개 300캡슐",
       "expected_code": "N00200018",
       "expected_qty_per_ord": 2
+    },
+    {
+      "id": "콜린_2박스",
+      "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
+      "option": "300g 2박스",
+      "expected_code": "N00200006",
+      "expected_qty_per_ord": 2
+    },
+    {
+      "id": "콜린_1박스",
+      "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
+      "option": "300g 1박스",
+      "expected_code": "N00200006",
+      "expected_qty_per_ord": 1
+    },
+    {
+      "id": "PS70_1박스_빈박스아님가정",
+      "product": "뉴트리정 두뇌 인지력 케어 ps70 포스파티딜세린",
+      "option": "80g 1박스",
+      "expected_code": "N00200009",
+      "expected_qty_per_ord": 1
     }
   ],
   "address_comma_tests": [
