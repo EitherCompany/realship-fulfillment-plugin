@@ -1,5 +1,5 @@
 {
-  "version": "0.5.15",
+  "version": "0.5.16",
   "_도움말": "매 사이클 시작 시 자동 통과 의무. 실패 시 ABORT.",
   "tests": [
     {
@@ -231,6 +231,27 @@
       "product": "뉴트리정 두뇌 인지력 케어 ps70 포스파티딜세린",
       "option": "80g 1박스",
       "expected_code": "N00200009",
+      "expected_qty_per_ord": 1
+    },
+    {
+      "id": "코큐텐_1개",
+      "product": "뉴트리정 대용량 180정 항산화 코큐텐 코엔자임Q10 혈압 감소 플러스",
+      "option": "할인이벤트: 1개 : 기본할인",
+      "expected_code": "N00200023",
+      "expected_qty_per_ord": 1
+    },
+    {
+      "id": "MSM_1개",
+      "product": "뉴트리정 대용량 300정 프리미엄 관절연골 MSM 1500",
+      "option": "할인이벤트: 1개 : 기본할인",
+      "expected_code": "N00200019",
+      "expected_qty_per_ord": 1
+    },
+    {
+      "id": "NMN_1개",
+      "product": "뉴트리정 가득채운 대용량 180정 프리미엄 NMN 브로콜리 포뮬러 53460 식약처인증",
+      "option": "할인이벤트: 1개 : 기본할인",
+      "expected_code": "N00200020",
       "expected_qty_per_ord": 1
     }
   ],
