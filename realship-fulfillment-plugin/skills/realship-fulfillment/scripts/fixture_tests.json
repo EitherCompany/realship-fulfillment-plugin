@@ -1,308 +1,336 @@
 {
-  "version": "0.5.16",
-  "_도움말": "매 사이클 시작 시 자동 통과 의무. 실패 시 ABORT.",
-  "tests": [
-    {
-      "id": "깔창_이더_그레이_245-250_1+1",
-      "product": "바디인솔 1+1 기능성 구름 푹신한 쫀쫀 쿠션 신발 깔창",
-      "option": "색상: 그레이 / 사이즈: 245-250 / 세트(추가할인): 1+1(2세트 기본할인)",
-      "expected_code": "E00400008",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "깔창_이더_블랙_235-240_2+2",
-      "product": "바디인솔 1+1 기능성 구름 푹신한 쫀쫀 쿠션 신발 깔창",
-      "option": "색상: 블랙 / 사이즈: 235-240 / 세트: 2+2(4세트 15% 추가할인)",
-      "expected_code": "E00400003",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "깔창_이더_블랙_245-250_1+1",
-      "product": "바디인솔 1+1 기능성 구름 깔창",
-      "option": "색상: 블랙 / 사이즈: 245-250 / 1+1(2세트)",
-      "expected_code": "E00400331",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "벌집깔창_265-270_1+1",
-      "product": "바디인솔 1+1 푹신한 쿠션 발편한 신발 깔창 평발 벌집",
-      "option": "사이즈: 265-270 / 1+1(2세트 기본할인)",
-      "expected_code": "E00400020",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "양말_화이트",
-      "product": "바디인솔 프리미엄 무지 중목 양말 20켤레, FREE, 화이트",
-      "option": "화이트 FREE",
-      "expected_code": "E00400023",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "베개_덴코_2개",
-      "product": "덴코 일자목 거북목 목디스크 경추베개 목베개 호텔베개",
-      "option": "할인이벤트: 2개 : 10% 추가할인",
-      "expected_code": "E00400497",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "베개_이더_경추_1개",
-      "product": "이더커머스 목편한 클라우드 경추 베개",
-      "option": "할인이벤트: 1개 : 기본할인",
-      "expected_code": "E00400015",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "가드웰_무릎_양쪽",
-      "product": "가드웰 무릎보호대 마사지볼 세트 슬개골 슬개건 보호대",
-      "option": "양쪽",
-      "expected_code": "E00400484",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "글램루아_스킨_L",
-      "product": "글램루아 편한 심리스 여성 브라 3p",
-      "option": "색상: 스킨 / 사이즈: L",
-      "expected_code": "E00400648",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "글램루아_블랙스킨화이트_L",
-      "product": "글램루아 편한 심리스 여성 브라 3p",
-      "option": "색상: 블랙1p+스킨1p+화이트1p / 사이즈: L",
-      "expected_code": "E00400488",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "아쿠아슈즈_블랙_270-275",
-      "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
-      "option": "색상: 블랙 / 사이즈: 270-275",
-      "expected_code": "E00400505",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "아쿠아슈즈_블랙_210-215_신규사이즈",
-      "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
-      "option": "색상: 블랙 / 사이즈: 210-215",
-      "expected_code": "E00400653",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "아쿠아슈즈_블루_240-245",
-      "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
-      "option": "색상: 블루 / 사이즈: 240-245",
-      "expected_code": "E00400655",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "아쿠아슈즈_퍼플_260-265",
-      "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
-      "option": "색상: 퍼플 / 사이즈: 260-265",
-      "expected_code": "E00400659",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "아쿠아슈즈_피치_220-225_중복코드_사용자지정",
-      "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
-      "option": "색상: 피치 / 사이즈: 220-225",
-      "expected_code": "E00400514",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_글루타치온_3개",
-      "product": "뉴트리정 대용량 120정 글루타치온 57000 콜라겐",
-      "option": "할인이벤트: 3개 : 15% 추가할인",
-      "expected_code": "N00200002",
-      "expected_qty_per_ord": 3
-    },
-    {
-      "id": "뉴트리_비오틴_1개",
-      "product": "뉴트리정 대용량 180정 가득채운 고함량 비오틴",
-      "option": "할인이벤트: 1개 : 기본할인",
-      "expected_code": "N00200007",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_PS70_6개",
-      "product": "뉴트리정 대용량 40포 두뇌 인지력 PS70 포스파티딜세린",
-      "option": "할인이벤트: 6개 : 30% 추가할인",
-      "expected_code": "N00200009",
-      "expected_qty_per_ord": 6
-    },
-    {
-      "id": "뉴트리_콜린_미오이노시톨",
-      "product": "뉴트리정 콜린 미오이노시톨 4000 엽산",
-      "option": "할인이벤트: 1개",
-      "expected_code": "N00200006",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_오메가3_rTG_2개",
-      "product": "뉴트리정 대용량 180정 초임계 알티지 고순도 rTG 프리미엄 오메가3",
-      "option": "할인이벤트: 2개 : 10%",
-      "expected_code": "N00200008",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "뉴트리_알파CD_1개",
-      "product": "뉴트리정 대용량 40포 알파CD 리얼핏 레몬컷 알파시클로덱스트린",
-      "option": "할인이벤트: 1개",
-      "expected_code": "N00200005",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_루테인_1개",
-      "product": "뉴트리정 대용량 300정 루테인 눈건강 마리골드",
-      "option": "할인이벤트: 1개",
-      "expected_code": "N00200015",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_마그네슘_1개",
-      "product": "뉴트리정 마그네슘",
-      "option": "할인이벤트: 1개",
-      "expected_code": "N00200016",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_멜라토닌_5mg",
-      "product": "뉴트리정 대용량 120정 식물성 멜라토닌 5mg 테아닌 트립토판",
-      "option": "할인이벤트: 1개",
-      "expected_code": "N00200004",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "옷걸이_덴코_그레이_30개",
-      "product": "덴코 어깨 뿔 방지 반원형 옷걸이, 그레이, 30개",
-      "option": "그레이 30개",
-      "expected_code": "E00400341",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_쏘팔메토_180정",
-      "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 1개, 180정",
-      "option": "1개 180정",
-      "expected_code": "N00200021",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "뉴트리_프로폴리스_300정",
-      "product": "뉴트리정 프리미엄 항산화 프로폴리스 대용량, 1개, 300정",
-      "option": "1개 300정",
-      "expected_code": "N00200022",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "쏘팔메토_2개_180정",
-      "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 2개, 180정",
-      "option": "2개 180정",
-      "expected_code": "N00200021",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "쏘팔메토_3개_180정",
-      "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 3개, 180정",
-      "option": "3개 180정",
-      "expected_code": "N00200021",
-      "expected_qty_per_ord": 3
-    },
-    {
-      "id": "대마종자유_2개_300캡슐",
-      "product": "뉴트리정 가득채운 프리미엄 대마종자유 1000 대용량 식약처인증 냉압착 캐나다산 햄프씨드오일, 2개, 300캡슐",
-      "option": "2개 300캡슐",
-      "expected_code": "N00200018",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "콜린_2박스",
-      "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
-      "option": "300g 2박스",
-      "expected_code": "N00200006",
-      "expected_qty_per_ord": 2
-    },
-    {
-      "id": "콜린_1박스",
-      "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
-      "option": "300g 1박스",
-      "expected_code": "N00200006",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "PS70_1박스_빈박스아님가정",
-      "product": "뉴트리정 두뇌 인지력 케어 ps70 포스파티딜세린",
-      "option": "80g 1박스",
-      "expected_code": "N00200009",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "코큐텐_1개",
-      "product": "뉴트리정 대용량 180정 항산화 코큐텐 코엔자임Q10 혈압 감소 플러스",
-      "option": "할인이벤트: 1개 : 기본할인",
-      "expected_code": "N00200023",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "MSM_1개",
-      "product": "뉴트리정 대용량 300정 프리미엄 관절연골 MSM 1500",
-      "option": "할인이벤트: 1개 : 기본할인",
-      "expected_code": "N00200019",
-      "expected_qty_per_ord": 1
-    },
-    {
-      "id": "NMN_1개",
-      "product": "뉴트리정 가득채운 대용량 180정 프리미엄 NMN 브로콜리 포뮬러 53460 식약처인증",
-      "option": "할인이벤트: 1개 : 기본할인",
-      "expected_code": "N00200020",
-      "expected_qty_per_ord": 1
-    }
-  ],
-  "address_comma_tests": [
-    {
-      "input": "서울특별시 강북구 인수봉로44길 20 대광맨션B 403호",
-      "expected": "서울특별시 강북구 인수봉로44길 20 대광맨션B, 403호"
-    },
-    {
-      "input": "세종특별자치시 산울동 산7 산울마을8단지 810동2904호",
-      "expected": "세종특별자치시 산울동 산7 산울마을8단지, 810동2904호"
-    },
-    {
-      "input": "인천광역시 연수구 송도미래로 30 C동 2608호",
-      "expected": "인천광역시 연수구 송도미래로 30, C동 2608호"
-    },
-    {
-      "input": "광주광역시 광산구 산월동 885-2 호반리젠시빌 303동1403호",
-      "expected": "광주광역시 광산구 산월동 885-2 호반리젠시빌, 303동1403호"
-    }
-  ],
-  "binbox_classification_tests": [
-    {
-      "mall": "쿠팡",
-      "주소": "서울 강남 %% 마스킹 주소 %",
-      "msg": "문 앞",
-      "expected": "binbox"
-    },
-    {
-      "mall": "쿠팡",
-      "주소": "서울 강남 정상 주소",
-      "msg": "문 앞",
-      "expected": "realship"
-    },
-    {
-      "mall": "스마트스토어",
-      "주소": "서울 강남",
-      "msg": "문 앞에 놓아주세요!",
-      "expected": "binbox"
-    },
-    {
-      "mall": "스마트스토어",
-      "주소": "서울 강남",
-      "msg": "문 앞에",
-      "expected": "realship"
-    },
-    {
-      "mall": "스마트스토어",
-      "주소": "서울 강남",
-      "msg": "부재시 문 앞에 놓아주세요",
-      "expected": "realship"
-    }
-  ]
+ "version": "0.5.17",
+ "_도움말": "매 사이클 시작 시 자동 통과 의무. 실패 시 ABORT.",
+ "tests": [
+  {
+   "id": "깔창_이더_그레이_245-250_1+1",
+   "product": "바디인솔 1+1 기능성 구름 푹신한 쫀쫀 쿠션 신발 깔창",
+   "option": "색상: 그레이 / 사이즈: 245-250 / 세트(추가할인): 1+1(2세트 기본할인)",
+   "expected_code": "E00400008",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "깔창_이더_블랙_235-240_2+2",
+   "product": "바디인솔 1+1 기능성 구름 푹신한 쫀쫀 쿠션 신발 깔창",
+   "option": "색상: 블랙 / 사이즈: 235-240 / 세트: 2+2(4세트 15% 추가할인)",
+   "expected_code": "E00400003",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "깔창_이더_블랙_245-250_1+1",
+   "product": "바디인솔 1+1 기능성 구름 깔창",
+   "option": "색상: 블랙 / 사이즈: 245-250 / 1+1(2세트)",
+   "expected_code": "E00400331",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "벌집깔창_265-270_1+1",
+   "product": "바디인솔 1+1 푹신한 쿠션 발편한 신발 깔창 평발 벌집",
+   "option": "사이즈: 265-270 / 1+1(2세트 기본할인)",
+   "expected_code": "E00400020",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "양말_화이트",
+   "product": "바디인솔 프리미엄 무지 중목 양말 20켤레, FREE, 화이트",
+   "option": "화이트 FREE",
+   "expected_code": "E00400023",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "베개_덴코_2개",
+   "product": "덴코 일자목 거북목 목디스크 경추베개 목베개 호텔베개",
+   "option": "할인이벤트: 2개 : 10% 추가할인",
+   "expected_code": "E00400497",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "베개_이더_경추_1개",
+   "product": "이더커머스 목편한 클라우드 경추 베개",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "E00400015",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "가드웰_무릎_양쪽",
+   "product": "가드웰 무릎보호대 마사지볼 세트 슬개골 슬개건 보호대",
+   "option": "양쪽",
+   "expected_code": "E00400484",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "글램루아_스킨_L",
+   "product": "글램루아 편한 심리스 여성 브라 3p",
+   "option": "색상: 스킨 / 사이즈: L",
+   "expected_code": "E00400648",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "글램루아_블랙스킨화이트_L",
+   "product": "글램루아 편한 심리스 여성 브라 3p",
+   "option": "색상: 블랙1p+스킨1p+화이트1p / 사이즈: L",
+   "expected_code": "E00400488",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "아쿠아슈즈_블랙_270-275",
+   "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
+   "option": "색상: 블랙 / 사이즈: 270-275",
+   "expected_code": "E00400505",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "아쿠아슈즈_블랙_210-215_신규사이즈",
+   "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
+   "option": "색상: 블랙 / 사이즈: 210-215",
+   "expected_code": "E00400653",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "아쿠아슈즈_블루_240-245",
+   "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
+   "option": "색상: 블루 / 사이즈: 240-245",
+   "expected_code": "E00400655",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "아쿠아슈즈_퍼플_260-265",
+   "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
+   "option": "색상: 퍼플 / 사이즈: 260-265",
+   "expected_code": "E00400659",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "아쿠아슈즈_피치_220-225_중복코드_사용자지정",
+   "product": "바디인솔 남녀공용 초경량 아쿠아슈즈 논슬립",
+   "option": "색상: 피치 / 사이즈: 220-225",
+   "expected_code": "E00400514",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_글루타치온_3개",
+   "product": "뉴트리정 대용량 120정 글루타치온 57000 콜라겐",
+   "option": "할인이벤트: 3개 : 15% 추가할인",
+   "expected_code": "N00200002",
+   "expected_qty_per_ord": 3
+  },
+  {
+   "id": "뉴트리_비오틴_1개",
+   "product": "뉴트리정 대용량 180정 가득채운 고함량 비오틴",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "N00200007",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_PS70_6개",
+   "product": "뉴트리정 대용량 40포 두뇌 인지력 PS70 포스파티딜세린",
+   "option": "할인이벤트: 6개 : 30% 추가할인",
+   "expected_code": "N00200009",
+   "expected_qty_per_ord": 6
+  },
+  {
+   "id": "뉴트리_콜린_미오이노시톨",
+   "product": "뉴트리정 콜린 미오이노시톨 4000 엽산",
+   "option": "할인이벤트: 1개",
+   "expected_code": "N00200006",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_오메가3_rTG_2개",
+   "product": "뉴트리정 대용량 180정 초임계 알티지 고순도 rTG 프리미엄 오메가3",
+   "option": "할인이벤트: 2개 : 10%",
+   "expected_code": "N00200008",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "뉴트리_알파CD_1개",
+   "product": "뉴트리정 대용량 40포 알파CD 리얼핏 레몬컷 알파시클로덱스트린",
+   "option": "할인이벤트: 1개",
+   "expected_code": "N00200005",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_루테인_1개",
+   "product": "뉴트리정 대용량 300정 루테인 눈건강 마리골드",
+   "option": "할인이벤트: 1개",
+   "expected_code": "N00200015",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_마그네슘_1개",
+   "product": "뉴트리정 마그네슘",
+   "option": "할인이벤트: 1개",
+   "expected_code": "N00200016",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_멜라토닌_5mg",
+   "product": "뉴트리정 대용량 120정 식물성 멜라토닌 5mg 테아닌 트립토판",
+   "option": "할인이벤트: 1개",
+   "expected_code": "N00200004",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "옷걸이_덴코_그레이_30개",
+   "product": "덴코 어깨 뿔 방지 반원형 옷걸이, 그레이, 30개",
+   "option": "그레이 30개",
+   "expected_code": "E00400341",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_쏘팔메토_180정",
+   "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 1개, 180정",
+   "option": "1개 180정",
+   "expected_code": "N00200021",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_프로폴리스_300정",
+   "product": "뉴트리정 프리미엄 항산화 프로폴리스 대용량, 1개, 300정",
+   "option": "1개 300정",
+   "expected_code": "N00200022",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "쏘팔메토_2개_180정",
+   "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 2개, 180정",
+   "option": "2개 180정",
+   "expected_code": "N00200021",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "쏘팔메토_3개_180정",
+   "product": "뉴트리정 전립선 지구력 쏘팔메토 옥타코사놀 대용량, 3개, 180정",
+   "option": "3개 180정",
+   "expected_code": "N00200021",
+   "expected_qty_per_ord": 3
+  },
+  {
+   "id": "대마종자유_2개_300캡슐",
+   "product": "뉴트리정 가득채운 프리미엄 대마종자유 1000 대용량 식약처인증 냉압착 캐나다산 햄프씨드오일, 2개, 300캡슐",
+   "option": "2개 300캡슐",
+   "expected_code": "N00200018",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "콜린_2박스",
+   "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
+   "option": "300g 2박스",
+   "expected_code": "N00200006",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "콜린_1박스",
+   "product": "뉴트리정 콜린 미오이노시톨 4000 엽산 대용량",
+   "option": "300g 1박스",
+   "expected_code": "N00200006",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "PS70_1박스_빈박스아님가정",
+   "product": "뉴트리정 두뇌 인지력 케어 ps70 포스파티딜세린",
+   "option": "80g 1박스",
+   "expected_code": "N00200009",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "코큐텐_1개",
+   "product": "뉴트리정 대용량 180정 항산화 코큐텐 코엔자임Q10 혈압 감소 플러스",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "N00200023",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "MSM_1개",
+   "product": "뉴트리정 대용량 300정 프리미엄 관절연골 MSM 1500",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "N00200019",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "NMN_1개",
+   "product": "뉴트리정 가득채운 대용량 180정 프리미엄 NMN 브로콜리 포뮬러 53460 식약처인증",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "N00200020",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_알파CD_bare2개",
+   "product": "뉴트리정 대용량 40포 알파CD 리얼핏 레몬컷 알파시클로덱스트린",
+   "option": "2개",
+   "expected_code": "N00200005",
+   "expected_qty_per_ord": 2
+  },
+  {
+   "id": "뉴트리_이너케어_신규",
+   "product": "뉴트리정  대용량 180정 시크릿 이너케어 질건강 질유산균 특허 유산균 프로바이오틱스",
+   "option": "할인이벤트: 1개 : 기본할인",
+   "expected_code": "N00200024",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_이너케어_구명",
+   "product": "뉴트리정 시크릿 이너케어 편안해질 질 유래 특허 유산균 대용량",
+   "option": "1개,",
+   "expected_code": "N00200024",
+   "expected_qty_per_ord": 1
+  },
+  {
+   "id": "뉴트리_콜린_11번가_2개-1개",
+   "product": "뉴트리정 대용량 5gx60포 리얼 콜린 미오이노시톨 4000 엽산 임신준비",
+   "option": "할인 이벤트:2개-1개 (+20610원)",
+   "expected_code": "N00200006",
+   "expected_qty_per_ord": 2
+  }
+ ],
+ "address_comma_tests": [
+  {
+   "input": "서울특별시 강북구 인수봉로44길 20 대광맨션B 403호",
+   "expected": "서울특별시 강북구 인수봉로44길 20 대광맨션B, 403호"
+  },
+  {
+   "input": "세종특별자치시 산울동 산7 산울마을8단지 810동2904호",
+   "expected": "세종특별자치시 산울동 산7 산울마을8단지, 810동2904호"
+  },
+  {
+   "input": "인천광역시 연수구 송도미래로 30 C동 2608호",
+   "expected": "인천광역시 연수구 송도미래로 30, C동 2608호"
+  },
+  {
+   "input": "광주광역시 광산구 산월동 885-2 호반리젠시빌 303동1403호",
+   "expected": "광주광역시 광산구 산월동 885-2 호반리젠시빌, 303동1403호"
+  }
+ ],
+ "binbox_classification_tests": [
+  {
+   "mall": "쿠팡",
+   "주소": "서울 강남 %% 마스킹 주소 %",
+   "msg": "문 앞",
+   "expected": "binbox"
+  },
+  {
+   "mall": "쿠팡",
+   "주소": "서울 강남 정상 주소",
+   "msg": "문 앞",
+   "expected": "realship"
+  },
+  {
+   "mall": "스마트스토어",
+   "주소": "서울 강남",
+   "msg": "문 앞에 놓아주세요!",
+   "expected": "binbox"
+  },
+  {
+   "mall": "스마트스토어",
+   "주소": "서울 강남",
+   "msg": "문 앞에",
+   "expected": "realship"
+  },
+  {
+   "mall": "스마트스토어",
+   "주소": "서울 강남",
+   "msg": "부재시 문 앞에 놓아주세요",
+   "expected": "realship"
+  }
+ ]
 }

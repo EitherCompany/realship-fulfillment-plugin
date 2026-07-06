@@ -1,6 +1,6 @@
 {
   "name": "realship-fulfillment-plugin",
-  "version": "0.5.16",
+  "version": "0.5.17",
   "description": "사방넷 → 풀필먼트 실배송 반자동화 플러그인 (v0.5.12 — 가드웰 무릎보호대 실배송 제외 추가). exclude_rules: 가드웰 발목보호대·무릎보호대, 슬루나(호텔베개 예외).",
   "author": {
     "name": "이창근 (이더컴퍼니)",
