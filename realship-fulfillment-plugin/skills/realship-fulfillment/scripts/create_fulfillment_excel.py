@@ -255,7 +255,7 @@ def classify_binbox(r, binbox_rules):
         if rule.get('mall') and rule['mall'] != mall: continue
         field_val = r.get(rule.get('field','')) or ''
         if 'contains' in rule and rule['contains'] in str(field_val): return 'binbox'
-        if 'contains_exact' in rule and rule['contains_exact'] in str(field_val): return 'binbox'
+        if 'contains_exact' in rule and str(field_val).strip() == rule['contains_exact']: return 'binbox'
     return 'realship'
 
 
