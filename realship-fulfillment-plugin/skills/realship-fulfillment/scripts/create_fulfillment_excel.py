@@ -393,6 +393,8 @@ def build_report(buckets, sku, rules_cfg, dup, conflicts):
     qty_suspects = []
     for r in final:
         opt = str(r.get('옵션(수집)') or '')
+        # 2026-08-24: 11번가 '할인 이벤트:N개-M개'의 -M개는 주문수량(수량컬럼 반영분)이라 묶음수 탐지에서 제외
+        opt = re.sub(r'(할인\s*이벤트\s*:\s*\d+\s*개)\s*-\s*\d+\s*개', r'\1', opt)
         intended = 1
         for mm in re.finditer(r'(\d+)\s*(개입|개|박스|팩|병)', opt):
             if mm.group(2) == '개입':

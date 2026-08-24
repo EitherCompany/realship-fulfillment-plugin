@@ -302,6 +302,27 @@
       "option": "1개 180정",
       "expected_code": "N00200024",
       "expected_qty_per_ord": 1
+    },
+    {
+      "id": "11번가_멜라토닌5mg_1개-2개",
+      "product": "뉴트리정 대용량 120정 식물성 멜라토닌 5mg 테아닌 트립토판 세로토닌 타트체리 수면",
+      "option": "할인 이벤트:1개-2개",
+      "expected_code": "N00200004",
+      "expected_qty_per_ord": 1
+    },
+    {
+      "id": "11번가_브로멜라인_2개-1개",
+      "product": "뉴트리정 대용량 120정 가득채운 프리미엄 브로멜라인 43200",
+      "option": "할인 이벤트:2개-1개 (+3,000원)",
+      "expected_code": "N00200003",
+      "expected_qty_per_ord": 2
+    },
+    {
+      "id": "쿠팡_가르시니아_300정",
+      "product": "뉴트리정 체지방 감소 가르시니아 HCA 대용량, 1개, 300정",
+      "option": "1개 300정",
+      "expected_code": "N00200028",
+      "expected_qty_per_ord": 1
     }
   ],
   "address_comma_tests": [
